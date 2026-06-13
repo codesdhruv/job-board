@@ -13,25 +13,44 @@ const tabs = [
   { slug: 'freelance', label: 'Freelance/Gig' },
 ];
 
-const validSlugs = tabs.map((t) => t.slug).filter((s): s is string => s !== null);
+const validTypeSlugs = tabs.map((t) => t.slug).filter((s): s is string => s !== null);
 const typeParam = Astro.url.searchParams.get('type');
-const activeType = typeParam && validSlugs.includes(typeParam) ? typeParam : null;
+const activeType = typeParam && validTypeSlugs.includes(typeParam) ? typeParam : null;
+
+const { results: stateRows } = await db
+  .prepare(
+    `SELECT id, name, slug, is_union_territory
+     FROM states
+     ORDER BY is_union_territory, name`
+  )
+  .all();
+
+type StateRow = { id: number; name: string; slug: string; is_union_territory: number };
+const allStates = stateRows as StateRow[];
+const dropdownStates = allStates.filter((s) => s.slug !== 'all-india');
+const validStateSlugs = new Set(allStates.map((s) => s.slug));
+
+const stateParam = Astro.url.searchParams.get('state');
+const activeState = stateParam && validStateSlugs.has(stateParam) ? stateParam : null;
+
+const where = ['j.is_published = 1', "j.last_date >= DATE('now')"];
+const binds: string[] = [];
+if (activeType) { where.push('jt.slug = ?'); binds.push(activeType); }
+if (activeState) { where.push('s.slug = ?'); binds.push(activeState); }
 
 const jobsSql = `SELECT j.*, jt.name AS type_name, jt.slug AS type_slug,
                         c.name AS category_name, s.name AS state_name,
-                        d.name AS dept_name, d.logo_r2_key
+                        s.slug AS state_slug, d.name AS dept_name, d.logo_r2_key
                  FROM jobs j
                  LEFT JOIN job_types jt ON j.job_type_id = jt.id
                  LEFT JOIN categories c ON j.category_id = c.id
                  LEFT JOIN states s ON j.state_id = s.id
                  LEFT JOIN departments d ON j.department_id = d.id
-                 WHERE j.is_published = 1
-                   AND j.last_date >= DATE('now')
-                   ${activeType ? 'AND jt.slug = ?' : ''}
+                 WHERE ${where.join(' AND ')}
                  ORDER BY j.created_at DESC`;
 
-const jobsStmt = activeType
-  ? db.prepare(jobsSql).bind(activeType)
+const jobsStmt = binds.length
+  ? db.prepare(jobsSql).bind(...binds)
   : db.prepare(jobsSql);
 const { results } = await jobsStmt.all();
 
@@ -61,9 +80,43 @@ function hrefFor(slug: string | null) {
   const qs = p.toString();
   return qs ? `/jobs?${qs}` : '/jobs';
 }
+
+const promoteState = activeType === 'government' || activeType === 'psu';
+
+const preservedParams: { key: string; value: string }[] = [];
+for (const [key, value] of Astro.url.searchParams.entries()) {
+  if (key === 'state' || key === 'page') continue;
+  preservedParams.push({ key, value });
+}
+
+const states = dropdownStates.filter((s) => s.is_union_territory === 0);
+const uts = dropdownStates.filter((s) => s.is_union_territory === 1);
 ---
 <BaseLayout title="Jobs — SarkariNaukriBoard">
   <h1>Jobs</h1>
+
+  {promoteState && (
+    <form method="get" action="/jobs" style="margin-bottom:24px">
+      {preservedParams.map((p) => <input type="hidden" name={p.key} value={p.value} />)}
+      <label for="state-select" style="display:block;font-weight:600;color:#171717;margin-bottom:8px">
+        Select your state
+      </label>
+      <select id="state-select" name="state" onchange="this.form.submit()" style="padding:8px;border:1px solid #ebebeb;border-radius:6px;min-width:240px">
+        <option value="" selected={!activeState}>All India</option>
+        <optgroup label="States">
+          {states.map((s) => (
+            <option value={s.slug} selected={activeState === s.slug}>{s.name}</option>
+          ))}
+        </optgroup>
+        <optgroup label="Union Territories">
+          {uts.map((s) => (
+            <option value={s.slug} selected={activeState === s.slug}>{s.name}</option>
+          ))}
+        </optgroup>
+      </select>
+    </form>
+  )}
+
   <nav aria-label="Filter by job type" style="display:flex;gap:24px;border-bottom:1px solid #ebebeb;margin-bottom:24px;padding-bottom:0">
     {tabs.map((t) => {
       const isActive = activeType === t.slug;
@@ -83,6 +136,26 @@ function hrefFor(slug: string | null) {
       );
     })}
   </nav>
+
+  {!promoteState && (
+    <form method="get" action="/jobs" style="margin-bottom:24px">
+      {preservedParams.map((p) => <input type="hidden" name={p.key} value={p.value} />)}
+      <select name="state" aria-label="Filter by state" onchange="this.form.submit()" style="padding:8px;border:1px solid #ebebeb;border-radius:6px;min-width:240px">
+        <option value="" selected={!activeState}>All India</option>
+        <optgroup label="States">
+          {states.map((s) => (
+            <option value={s.slug} selected={activeState === s.slug}>{s.name}</option>
+          ))}
+        </optgroup>
+        <optgroup label="Union Territories">
+          {uts.map((s) => (
+            <option value={s.slug} selected={activeState === s.slug}>{s.name}</option>
+          ))}
+        </optgroup>
+      </select>
+    </form>
+  )}
+
   {results.length === 0 ? (
     <p>No jobs found.</p>
   ) : (
