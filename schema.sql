@@ -75,6 +75,20 @@ CREATE TABLE IF NOT EXISTS categories (
   slug TEXT UNIQUE NOT NULL
 );
 
+INSERT OR IGNORE INTO categories (name, slug) VALUES
+  ('Banking',                  'banking'),
+  ('Defence',                  'defence'),
+  ('Engineering',              'engineering'),
+  ('IT / Software',            'it-software'),
+  ('Medical / Health',         'medical-health'),
+  ('Police / Law',             'police-law'),
+  ('Railways',                 'railways'),
+  ('Teaching / Education',     'teaching-education'),
+  ('Clerical / Administration','clerical-administration'),
+  ('Accounts / Finance',       'accounts-finance'),
+  ('Agriculture',              'agriculture'),
+  ('Research / Science',       'research-science');
+
 -- 4. departments -----------------------------------------------------------
 CREATE TABLE IF NOT EXISTS departments (
   id           INTEGER PRIMARY KEY AUTOINCREMENT,

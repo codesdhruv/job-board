@@ -33,10 +33,21 @@ const validStateSlugs = new Set(allStates.map((s) => s.slug));
 const stateParam = Astro.url.searchParams.get('state');
 const activeState = stateParam && validStateSlugs.has(stateParam) ? stateParam : null;
 
+const { results: categoryRows } = await db
+  .prepare(`SELECT id, name, slug FROM categories ORDER BY name`)
+  .all();
+type CategoryRow = { id: number; name: string; slug: string };
+const categories = categoryRows as CategoryRow[];
+const validCategorySlugs = new Set(categories.map((c) => c.slug));
+
+const categoryParam = Astro.url.searchParams.get('category');
+const activeCategory = categoryParam && validCategorySlugs.has(categoryParam) ? categoryParam : null;
+
 const where = ['j.is_published = 1', "j.last_date >= DATE('now')"];
 const binds: string[] = [];
 if (activeType) { where.push('jt.slug = ?'); binds.push(activeType); }
 if (activeState) { where.push('s.slug = ?'); binds.push(activeState); }
+if (activeCategory) { where.push('c.slug = ?'); binds.push(activeCategory); }
 
 const jobsSql = `SELECT j.*, jt.name AS type_name, jt.slug AS type_slug,
                         c.name AS category_name, s.name AS state_name,
@@ -84,9 +95,10 @@ function hrefFor(slug: string | null) {
 const promoteState = activeType === 'government' || activeType === 'psu';
 
 const preservedParams: { key: string; value: string }[] = [];
+const preservedForCategory: { key: string; value: string }[] = [];
 for (const [key, value] of Astro.url.searchParams.entries()) {
-  if (key === 'state' || key === 'page') continue;
-  preservedParams.push({ key, value });
+  if (key !== 'state' && key !== 'page') preservedParams.push({ key, value });
+  if (key !== 'category' && key !== 'page') preservedForCategory.push({ key, value });
 }
 
 const states = dropdownStates.filter((s) => s.is_union_territory === 0);
@@ -113,6 +125,18 @@ const uts = dropdownStates.filter((s) => s.is_union_territory === 1);
             <option value={s.slug} selected={activeState === s.slug}>{s.name}</option>
           ))}
         </optgroup>
+      </select>
+    </form>
+  )}
+
+  {promoteState && (
+    <form method="get" action="/jobs" style="margin-bottom:24px">
+      {preservedForCategory.map((p) => <input type="hidden" name={p.key} value={p.value} />)}
+      <select name="category" aria-label="Filter by category" onchange="this.form.submit()" style="padding:8px;border:1px solid #ebebeb;border-radius:6px;min-width:240px">
+        <option value="" selected={!activeCategory}>All categories</option>
+        {categories.map((c) => (
+          <option value={c.slug} selected={activeCategory === c.slug}>{c.name}</option>
+        ))}
       </select>
     </form>
   )}
@@ -152,6 +176,18 @@ const uts = dropdownStates.filter((s) => s.is_union_territory === 1);
             <option value={s.slug} selected={activeState === s.slug}>{s.name}</option>
           ))}
         </optgroup>
+      </select>
+    </form>
+  )}
+
+  {!promoteState && (
+    <form method="get" action="/jobs" style="margin-bottom:24px">
+      {preservedForCategory.map((p) => <input type="hidden" name={p.key} value={p.value} />)}
+      <select name="category" aria-label="Filter by category" onchange="this.form.submit()" style="padding:8px;border:1px solid #ebebeb;border-radius:6px;min-width:240px">
+        <option value="" selected={!activeCategory}>All categories</option>
+        {categories.map((c) => (
+          <option value={c.slug} selected={activeCategory === c.slug}>{c.name}</option>
+        ))}
       </select>
     </form>
   )}
