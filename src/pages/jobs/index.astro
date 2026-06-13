@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import JobCard from '../../components/JobCard.astro';
 import { getDb } from '../../lib/db';
 
 const db = getDb();
@@ -25,10 +26,6 @@ const { results } = await db
   {results.length === 0 ? (
     <p>No jobs found.</p>
   ) : (
-    <ul>
-      {results.map((j: any) => (
-        <li>{j.title} — {j.last_date} — {j.slug}</li>
-      ))}
-    </ul>
+    results.map((j: any) => <JobCard job={j} />)
   )}
 </BaseLayout>

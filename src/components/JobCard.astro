@@ -1,0 +1,41 @@
+---
+interface Props {
+  job: {
+    slug: string;
+    title: string;
+    dept_name?: string | null;
+    type_name?: string | null;
+    state_name?: string | null;
+    vacancies?: number | null;
+    last_date: string;
+    salary?: string | null;
+  };
+}
+
+const { job } = Astro.props;
+
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+const last = new Date(job.last_date);
+const daysLeft = Math.floor((last.getTime() - today.getTime()) / 86_400_000);
+const isUrgent = daysLeft >= 0 && daysLeft <= 7;
+---
+<article>
+  <h2><a href={`/jobs/${job.slug}`}>{job.title}</a></h2>
+  {job.dept_name && <p>{job.dept_name}</p>}
+  <p>
+    {job.type_name && <span>[{job.type_name}]</span>}
+    {job.state_name && <span> · {job.state_name}</span>}
+  </p>
+  {job.vacancies != null && <p>Vacancies: {job.vacancies}</p>}
+  <p>
+    Last date:{' '}
+    {isUrgent ? (
+      <span style="color:#ee0000">{job.last_date}</span>
+    ) : (
+      <span>{job.last_date}</span>
+    )}
+  </p>
+  {job.salary && <p>Salary: {job.salary}</p>}
+  <p><a href={`/jobs/${job.slug}`}>View Details →</a></p>
+</article>
