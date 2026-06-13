@@ -1,7 +1,7 @@
 {
 	"compatibility_date": "2026-06-13",
 	"compatibility_flags": ["global_fetch_strictly_public"],
-	"name": "jobshare.com",
+	"name": "job-board",
 	"main": "@astrojs/cloudflare/entrypoints/server",
 	"assets": {
 		"directory": "./dist",
@@ -9,5 +9,27 @@
 	},
 	"observability": {
 		"enabled": true
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "job-board-db",
+			"database_id": "PLACEHOLDER_D1_ID"
+		}
+	],
+	"kv_namespaces": [
+		{
+			"binding": "KV",
+			"id": "PLACEHOLDER_KV_ID"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "R2",
+			"bucket_name": "job-board-assets"
+		}
+	],
+	"vars": {
+		"SITE_URL": "https://example.com"
 	}
 }
