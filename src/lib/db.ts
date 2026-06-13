@@ -1,6 +1,8 @@
-export function getDb(locals: App.Locals): D1Database {
-  const db = locals.runtime?.env?.DB;
-  if (!db) throw new Error('D1 binding "DB" is not available on locals.runtime.env');
+import { env } from 'cloudflare:workers';
+
+export function getDb(): D1Database {
+  const db = (env as any).DB as D1Database | undefined;
+  if (!db) throw new Error('D1 binding "DB" is not available');
   return db;
 }
 

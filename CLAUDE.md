@@ -16,14 +16,15 @@ Scaffolding complete. The following has been built:
 - `schema.sql` — idempotent D1 schema with seed data for `job_types` (4 rows) and `states` (28 + 8 UTs + All India). `categories` and `departments` tables exist but have no seed data yet.
 - `src/layouts/BaseLayout.astro` — bare HTML shell; accepts `title`, `description`, `canonical` props.
 - `src/layouts/AdminLayout.astro` — bare HTML shell with `noindex` meta; accepts `title` prop.
-- `src/lib/db.ts` — `getDb()` helper + TypeScript interfaces for all table rows.
+- `src/lib/db.ts` — `getDb()` helper (no args; uses `import { env } from 'cloudflare:workers'` — Astro v6 removed `Astro.locals.runtime.env`) + TypeScript interfaces for all table rows.
 - `src/lib/auth.ts` — PBKDF2-SHA256 (100 000 iters) password hashing/verification; HMAC-SHA256 signed session tokens. **Note:** CLAUDE.md previously said bcrypt — the actual implementation uses PBKDF2 via Web Crypto API (no npm dependency).
 - `src/lib/kv.ts` — KV cache helpers (stub).
 - `src/lib/seo.ts` — SEO/JSON-LD builder (stub).
-- `src/middleware/index.ts` — auth guard for all `/admin/*` routes except `/admin/login`; reads `ADMIN_SECRET` from `locals.runtime.env`.
+- `src/middleware/index.ts` — auth guard for all `/admin/*` routes except `/admin/login`; reads `ADMIN_SECRET` from `locals.runtime.env`. **Known bug:** uses the API removed in Astro v6 — will throw on first `/admin/*` request. Migrate to `import { env } from 'cloudflare:workers'` when starting F-14/F-23.
 - `src/pages/index.astro` — still the default Astro welcome page; no real content yet.
+- `src/pages/jobs/index.astro` — **F-01 first slice** (built). Runs the F-01 SQL with no filters / no pagination; renders a plain `<ul>` of `{title} — {last_date} — {slug}`. Verified `GET /jobs → 200` via `wrangler dev`. Filters, pagination, `JobCard`, and styling still to come.
 
-Nothing in `/src/pages/` beyond `index.astro` exists yet. No components have been built.
+No components have been built yet.
 
 ---
 
@@ -65,7 +66,7 @@ src/
   pages/
     index.astro                 ✓ exists (still default Astro welcome page — replace)
     jobs/
-      index.astro               — All jobs listing + filters
+      index.astro               ✓ F-01 minimal slice (no filters / pagination / styling yet)
       [slug].astro              — Job detail page + JSON-LD
     category/[slug].astro       — Jobs by category
     state/
@@ -93,7 +94,7 @@ src/
     BaseLayout.astro            ✓ bare shell (nav/footer not yet added)
     AdminLayout.astro           ✓ bare shell (sidebar not yet added)
   lib/
-    db.ts                       ✓ getDb() + row interfaces
+    db.ts                       ✓ getDb() (uses cloudflare:workers env) + row interfaces
     auth.ts                     ✓ PBKDF2 hash/verify + HMAC session sign/verify
     kv.ts                       ✓ stub
     seo.ts                      ✓ stub

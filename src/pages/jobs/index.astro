@@ -1,0 +1,34 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getDb } from '../../lib/db';
+
+const db = getDb();
+
+const { results } = await db
+  .prepare(
+    `SELECT j.*, jt.name AS type_name, jt.slug AS type_slug,
+            c.name AS category_name, s.name AS state_name,
+            d.name AS dept_name, d.logo_r2_key
+     FROM jobs j
+     LEFT JOIN job_types jt ON j.job_type_id = jt.id
+     LEFT JOIN categories c ON j.category_id = c.id
+     LEFT JOIN states s ON j.state_id = s.id
+     LEFT JOIN departments d ON j.department_id = d.id
+     WHERE j.is_published = 1
+       AND j.last_date >= DATE('now')
+     ORDER BY j.created_at DESC`
+  )
+  .all();
+---
+<BaseLayout title="Jobs — SarkariNaukriBoard">
+  <h1>Jobs</h1>
+  {results.length === 0 ? (
+    <p>No jobs found.</p>
+  ) : (
+    <ul>
+      {results.map((j: any) => (
+        <li>{j.title} — {j.last_date} — {j.slug}</li>
+      ))}
+    </ul>
+  )}
+</BaseLayout>
