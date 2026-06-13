@@ -5,24 +5,84 @@ import { getDb } from '../../lib/db';
 
 const db = getDb();
 
-const { results } = await db
+const tabs = [
+  { slug: null, label: 'All' },
+  { slug: 'government', label: 'Government' },
+  { slug: 'psu', label: 'PSU/Semi-Govt' },
+  { slug: 'private', label: 'Private' },
+  { slug: 'freelance', label: 'Freelance/Gig' },
+];
+
+const validSlugs = tabs.map((t) => t.slug).filter((s): s is string => s !== null);
+const typeParam = Astro.url.searchParams.get('type');
+const activeType = typeParam && validSlugs.includes(typeParam) ? typeParam : null;
+
+const jobsSql = `SELECT j.*, jt.name AS type_name, jt.slug AS type_slug,
+                        c.name AS category_name, s.name AS state_name,
+                        d.name AS dept_name, d.logo_r2_key
+                 FROM jobs j
+                 LEFT JOIN job_types jt ON j.job_type_id = jt.id
+                 LEFT JOIN categories c ON j.category_id = c.id
+                 LEFT JOIN states s ON j.state_id = s.id
+                 LEFT JOIN departments d ON j.department_id = d.id
+                 WHERE j.is_published = 1
+                   AND j.last_date >= DATE('now')
+                   ${activeType ? 'AND jt.slug = ?' : ''}
+                 ORDER BY j.created_at DESC`;
+
+const jobsStmt = activeType
+  ? db.prepare(jobsSql).bind(activeType)
+  : db.prepare(jobsSql);
+const { results } = await jobsStmt.all();
+
+const { results: countRows } = await db
   .prepare(
-    `SELECT j.*, jt.name AS type_name, jt.slug AS type_slug,
-            c.name AS category_name, s.name AS state_name,
-            d.name AS dept_name, d.logo_r2_key
+    `SELECT jt.slug AS slug, COUNT(*) AS count
      FROM jobs j
-     LEFT JOIN job_types jt ON j.job_type_id = jt.id
-     LEFT JOIN categories c ON j.category_id = c.id
-     LEFT JOIN states s ON j.state_id = s.id
-     LEFT JOIN departments d ON j.department_id = d.id
-     WHERE j.is_published = 1
-       AND j.last_date >= DATE('now')
-     ORDER BY j.created_at DESC`
+     JOIN job_types jt ON j.job_type_id = jt.id
+     WHERE j.is_published = 1 AND j.last_date >= DATE('now')
+     GROUP BY jt.slug`
   )
   .all();
+
+const counts = new Map<string | null, number>();
+let total = 0;
+for (const row of countRows as { slug: string; count: number }[]) {
+  counts.set(row.slug, row.count);
+  total += row.count;
+}
+counts.set(null, total);
+
+function hrefFor(slug: string | null) {
+  const p = new URLSearchParams(Astro.url.searchParams);
+  p.delete('page');
+  if (slug) p.set('type', slug);
+  else p.delete('type');
+  const qs = p.toString();
+  return qs ? `/jobs?${qs}` : '/jobs';
+}
 ---
 <BaseLayout title="Jobs — SarkariNaukriBoard">
   <h1>Jobs</h1>
+  <nav aria-label="Filter by job type" style="display:flex;gap:24px;border-bottom:1px solid #ebebeb;margin-bottom:24px;padding-bottom:0">
+    {tabs.map((t) => {
+      const isActive = activeType === t.slug;
+      const count = counts.get(t.slug) ?? 0;
+      return (
+        <a
+          href={hrefFor(t.slug)}
+          aria-current={isActive ? 'page' : undefined}
+          style={`padding:12px 0;text-decoration:none;${
+            isActive
+              ? 'color:#171717;font-weight:600;border-bottom:2px solid #171717;margin-bottom:-1px'
+              : 'color:#4d4d4d;font-weight:400'
+          }`}
+        >
+          {t.label} ({count})
+        </a>
+      );
+    })}
+  </nav>
   {results.length === 0 ? (
     <p>No jobs found.</p>
   ) : (
