@@ -10,7 +10,20 @@ Design system reference: `DESIGN.md`
 
 ## Current state
 
-Boilerplate only. `src/pages/index.astro` is the default Astro welcome page. No database bindings, no components, no features built.
+Scaffolding complete. The following has been built:
+
+- `wrangler.jsonc` — D1, KV, and R2 bindings wired in; `SITE_URL` var set; observability enabled.
+- `schema.sql` — idempotent D1 schema with seed data for `job_types` (4 rows) and `states` (28 + 8 UTs + All India). `categories` and `departments` tables exist but have no seed data yet.
+- `src/layouts/BaseLayout.astro` — bare HTML shell; accepts `title`, `description`, `canonical` props.
+- `src/layouts/AdminLayout.astro` — bare HTML shell with `noindex` meta; accepts `title` prop.
+- `src/lib/db.ts` — `getDb()` helper + TypeScript interfaces for all table rows.
+- `src/lib/auth.ts` — PBKDF2-SHA256 (100 000 iters) password hashing/verification; HMAC-SHA256 signed session tokens. **Note:** CLAUDE.md previously said bcrypt — the actual implementation uses PBKDF2 via Web Crypto API (no npm dependency).
+- `src/lib/kv.ts` — KV cache helpers (stub).
+- `src/lib/seo.ts` — SEO/JSON-LD builder (stub).
+- `src/middleware/index.ts` — auth guard for all `/admin/*` routes except `/admin/login`; reads `ADMIN_SECRET` from `locals.runtime.env`.
+- `src/pages/index.astro` — still the default Astro welcome page; no real content yet.
+
+Nothing in `/src/pages/` beyond `index.astro` exists yet. No components have been built.
 
 ---
 
@@ -27,7 +40,7 @@ Boilerplate only. `src/pages/index.astro` is the default Astro welcome page. No 
 | CLI | Wrangler 4.x |
 | Node | >=22.12.0 |
 
-Config file is `wrangler.jsonc` (not `.toml`). D1, KV, and R2 bindings are not yet wired into it — they need to be added before any DB work.
+Config file is `wrangler.jsonc` (not `.toml`). D1, KV, and R2 bindings are already wired in. D1 `database_id` is still a placeholder (`PLACEHOLDER_D1_ID`) — replace with the real ID from `wrangler d1 create job-board-db` before deploying. KV `id` is also a placeholder (`PLACEHOLDER_KV_ID`).
 
 ---
 
@@ -45,49 +58,50 @@ npx wrangler deploy    # deploy to Cloudflare
 
 ---
 
-## Planned project structure
+## Project structure (✓ = exists, — = still to build)
 
 ```
 src/
   pages/
-    index.astro                 # Homepage
+    index.astro                 ✓ exists (still default Astro welcome page — replace)
     jobs/
-      index.astro               # All jobs listing + filters
-      [slug].astro              # Job detail page + JSON-LD
-    category/[slug].astro       # Jobs by category
+      index.astro               — All jobs listing + filters
+      [slug].astro              — Job detail page + JSON-LD
+    category/[slug].astro       — Jobs by category
     state/
-      index.astro               # /states — browse all states
-      [slug].astro              # All jobs in a state
+      index.astro               — /states — browse all states
+      [slug].astro              — All jobs in a state
       [slug]/
-        government.astro        # Govt jobs in a state
-        psu.astro               # PSU jobs in a state
-    sitemap.xml.ts
-    rss.xml.ts
+        government.astro        — Govt jobs in a state
+        psu.astro               — PSU jobs in a state
+    sitemap.xml.ts              —
+    rss.xml.ts                  —
     admin/
-      login.astro
-      dashboard.astro
+      login.astro               —
+      dashboard.astro           —
       jobs/
-        index.astro             # Admin job list
-        new.astro               # Post new job
-        [id]/edit.astro         # Edit job
+        index.astro             — Admin job list
+        new.astro               — Post new job
+        [id]/edit.astro         — Edit job
   components/
-    JobCard.astro
-    JobFilters.astro
-    Pagination.astro
-    AdminJobRow.astro
-    JsonLd.astro
+    JobCard.astro               —
+    JobFilters.astro            —
+    Pagination.astro            —
+    AdminJobRow.astro           —
+    JsonLd.astro                —
   layouts/
-    BaseLayout.astro            # Public layout (nav, head, footer)
-    AdminLayout.astro           # Admin layout (sidebar, auth guard)
+    BaseLayout.astro            ✓ bare shell (nav/footer not yet added)
+    AdminLayout.astro           ✓ bare shell (sidebar not yet added)
   lib/
-    db.ts                       # D1 query helpers
-    auth.ts                     # Cookie session auth (HMAC-SHA256)
-    kv.ts                       # KV cache read/write helpers
-    seo.ts                      # Meta tag + JSON-LD builders
+    db.ts                       ✓ getDb() + row interfaces
+    auth.ts                     ✓ PBKDF2 hash/verify + HMAC session sign/verify
+    kv.ts                       ✓ stub
+    seo.ts                      ✓ stub
   middleware/
-    index.ts                    # Auth guard for /admin/* routes
+    index.ts                    ✓ auth guard for /admin/*
 public/
-  robots.txt
+  robots.txt                    —
+schema.sql                      ✓ full schema + seed data
 ```
 
 ---
@@ -112,7 +126,7 @@ public/
 Indexes: `job_type_id`, `category_id`, `state_id`, `last_date`, `is_published`, composite `(job_type_id, state_id)`
 
 ### `admins`
-`id`, `username`, `password_hash` (bcrypt cost 12), `created_at`
+`id`, `username`, `password_hash` (PBKDF2-SHA256, stored as `pbkdf2$iters$salt$hash`), `created_at`
 
 ---
 
@@ -143,7 +157,7 @@ Set in Cloudflare dashboard → Workers → Settings → Variables.
 - **F-20** Pagination — 20/page public, 50/page admin; preserves all filter params
 
 ### Phase 3 — Admin
-- **F-14** Admin login — POST to `/admin/login`; bcrypt verify; sets `httpOnly Secure SameSite=Strict` cookie; 8h expiry; rate limit 5 fails/IP/15min via KV
+- **F-14** Admin login — POST to `/admin/login`; PBKDF2-SHA256 verify (via `src/lib/auth.ts`); sets `httpOnly Secure SameSite=Strict` cookie; 8h expiry; rate limit 5 fails/IP/15min via KV
 - **F-15** Admin dashboard — 4 metric counts + expiring soon table + recently added
 - **F-16** Admin job list — all jobs (live + draft + expired), colour-coded status, 50/page
 - **F-17** Post new job — full form with conditional state requirement (required when type=Govt or PSU), auto-slug from title
