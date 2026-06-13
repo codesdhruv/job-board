@@ -23,6 +23,7 @@ Scaffolding complete. The following has been built:
 - `src/middleware/index.ts` — auth guard for all `/admin/*` routes except `/admin/login`; reads `ADMIN_SECRET` from `locals.runtime.env`. **Known bug:** uses the API removed in Astro v6 — will throw on first `/admin/*` request. Migrate to `import { env } from 'cloudflare:workers'` when starting F-14/F-23.
 - `src/pages/index.astro` — still the default Astro welcome page; no real content yet.
 - `src/pages/jobs/index.astro` — **F-01 first slice** (built). Runs the F-01 SQL with no filters / no pagination; maps results through `<JobCard />`. Verified `GET /jobs → 200`. Filters, pagination, and styling still to come.
+- `src/pages/jobs/[slug].astro` — **F-02 first slice** (built). Detail page with breadcrumb, info grid, description (`set:html`, sanitization deferred to F-17), apply button (url/email/none), expired banner when `last_date < today`, and similar-jobs sidebar (same category, max 5). Returns 404 on missing/unpublished slug. JSON-LD (F-11) and R2 logo rendering still to come.
 - `src/components/JobCard.astro` — semantic `<article>` rendering title, dept, type badge, state, vacancies, last_date, salary, and "View Details →" link. Inline `style="color:#ee0000"` applied to `last_date` only when ≤7 days away (no styling framework, per spec). Verified end-to-end on 2026-06-14 with seeded urgent + non-urgent rows.
 
 ---
@@ -66,7 +67,7 @@ src/
     index.astro                 ✓ exists (still default Astro welcome page — replace)
     jobs/
       index.astro               ✓ F-01 minimal slice (no filters / pagination / styling yet)
-      [slug].astro              — Job detail page + JSON-LD
+      [slug].astro              ✓ F-02 first slice (detail + apply + similar; JSON-LD/R2 logo pending)
     category/[slug].astro       — Jobs by category
     state/
       index.astro               — /states — browse all states

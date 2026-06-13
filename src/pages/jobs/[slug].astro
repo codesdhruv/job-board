@@ -1,0 +1,190 @@
+---
+import { env } from 'cloudflare:workers';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getDb } from '../../lib/db';
+
+const { slug } = Astro.params;
+const db = getDb();
+
+const job = await db
+  .prepare(
+    `SELECT j.*, jt.name AS type_name, jt.slug AS type_slug,
+            c.name AS category_name, c.slug AS category_slug,
+            s.name AS state_name, s.slug AS state_slug,
+            d.name AS dept_name, d.logo_r2_key
+     FROM jobs j
+     LEFT JOIN job_types jt ON j.job_type_id = jt.id
+     LEFT JOIN categories c ON j.category_id = c.id
+     LEFT JOIN states s ON j.state_id = s.id
+     LEFT JOIN departments d ON j.department_id = d.id
+     WHERE j.slug = ? AND j.is_published = 1`
+  )
+  .bind(slug)
+  .first<any>();
+
+if (!job) {
+  Astro.response.status = 404;
+}
+
+const todayStr = new Date().toISOString().slice(0, 10);
+const isExpired = job ? job.last_date < todayStr : false;
+
+let daysLeft = 0;
+if (job) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const last = new Date(job.last_date);
+  daysLeft = Math.floor((last.getTime() - today.getTime()) / 86_400_000);
+}
+const isUrgent = !isExpired && daysLeft >= 0 && daysLeft <= 7;
+
+const applyMode: 'url' | 'email' | 'none' = job?.apply_url
+  ? 'url'
+  : job?.apply_email
+    ? 'email'
+    : 'none';
+
+let similar: any[] = [];
+if (job && job.category_id != null) {
+  const res = await db
+    .prepare(
+      `SELECT j.id, j.slug, j.title, j.last_date, d.name AS dept_name
+       FROM jobs j
+       LEFT JOIN departments d ON j.department_id = d.id
+       WHERE j.category_id = ? AND j.id != ? AND j.is_published = 1
+       ORDER BY j.created_at DESC LIMIT 5`
+    )
+    .bind(job.category_id, job.id)
+    .all<any>();
+  similar = res.results ?? [];
+}
+
+const siteUrl = (env as any).SITE_URL ?? '';
+const canonical = job ? `${siteUrl}/jobs/${job.slug}` : undefined;
+
+const stripped = job?.description
+  ? job.description.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()
+  : '';
+const metaDescription = job
+  ? stripped
+    ? stripped.slice(0, 155)
+    : `${job.title}${job.dept_name ? ' at ' + job.dept_name : ''}${job.state_name ? ' — ' + job.state_name : ''}. Apply by ${job.last_date}.`
+  : undefined;
+const pageTitle = job ? `${job.title} — SarkariNaukriBoard` : 'Not found — SarkariNaukriBoard';
+---
+<BaseLayout title={pageTitle} description={metaDescription} canonical={canonical}>
+  {!job ? (
+    <main>
+      <h1>Job not found</h1>
+      <p>The job you are looking for does not exist or is no longer published.</p>
+      <p><a href="/jobs">← Back to all jobs</a></p>
+    </main>
+  ) : (
+    <main>
+      <nav aria-label="Breadcrumb">
+        <a href="/">Home</a> ›{' '}
+        <a href="/jobs">Jobs</a>
+        {job.category_name && (
+          <>
+            {' '}›{' '}
+            <a href={`/category/${job.category_slug}`}>{job.category_name}</a>
+          </>
+        )}
+        {' '}› <span>{job.title}</span>
+      </nav>
+
+      <header>
+        {job.dept_name && <p>{job.dept_name}</p>}
+        <h1>{job.title}</h1>
+        <p>
+          {job.type_name && <span>[{job.type_name}]</span>}
+          {job.state_name && <span> · {job.state_name}</span>}
+          {' '}· <span>Posted {job.created_at?.slice(0, 10)}</span>
+        </p>
+      </header>
+
+      <section aria-label="Job details">
+        <dl>
+          {job.vacancies != null && (
+            <>
+              <dt>Vacancies</dt>
+              <dd>{job.vacancies}</dd>
+            </>
+          )}
+          <dt>Last date</dt>
+          <dd>
+            {isUrgent ? (
+              <span style="color:#ee0000">{job.last_date}</span>
+            ) : (
+              <span>{job.last_date}</span>
+            )}
+          </dd>
+          {job.salary && (
+            <>
+              <dt>Salary</dt>
+              <dd>{job.salary}</dd>
+            </>
+          )}
+          {job.qualification && (
+            <>
+              <dt>Qualification</dt>
+              <dd>{job.qualification}</dd>
+            </>
+          )}
+          {job.age_limit && (
+            <>
+              <dt>Age limit</dt>
+              <dd>{job.age_limit}</dd>
+            </>
+          )}
+          {job.category_name && (
+            <>
+              <dt>Category</dt>
+              <dd>{job.category_name}</dd>
+            </>
+          )}
+          {job.location && (
+            <>
+              <dt>Location</dt>
+              <dd>{job.location}</dd>
+            </>
+          )}
+        </dl>
+      </section>
+
+      {job.description && (
+        <section aria-label="Description">
+          <h2>Description</h2>
+          <div set:html={job.description} />
+        </section>
+      )}
+
+      <section aria-label="Apply">
+        {isExpired ? (
+          <p role="status" style="color:#ee0000"><strong>Applications closed.</strong> The last date for this job has passed.</p>
+        ) : applyMode === 'url' ? (
+          <p><a href={job.apply_url} target="_blank" rel="noopener">Apply Now →</a></p>
+        ) : applyMode === 'email' ? (
+          <p><a href={`mailto:${job.apply_email}`}>Apply via Email</a></p>
+        ) : (
+          <p>Check official website for application details.</p>
+        )}
+      </section>
+
+      {similar.length > 0 && (
+        <aside aria-label="Similar jobs">
+          <h2>Similar jobs</h2>
+          <ul>
+            {similar.map((s) => (
+              <li>
+                <a href={`/jobs/${s.slug}`}>{s.title}</a>
+                {s.dept_name && <span> — {s.dept_name}</span>}
+                <span> (last date: {s.last_date})</span>
+              </li>
+            ))}
+          </ul>
+        </aside>
+      )}
+    </main>
+  )}
+</BaseLayout>
