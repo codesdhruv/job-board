@@ -476,10 +476,10 @@ A condensed display sans (`Space Grotesk`) is loaded as a third face for occasio
 | `{typography.button-lg}` | 16px | 500 | 24px | 0 | Marketing-scale pill button labels. |
 
 ### Principles
-- **Negative tracking is part of the voice.** Display sizes use aggressive `-2.4` to `-0.6` px tracking. Reverting to default tracking breaks the brand.
-- **Sentence-case headlines, period-terminated.** Headlines like "Build and deploy on the AI Cloud." end with a deliberate period — that punctuation is part of the brand's voice.
-- **Mono for the technical layer only.** Section eyebrows, code blocks, terminal mockups. Body paragraphs never set in mono.
-- **Weight 600 is the display ceiling.** The geometric sans never appears at 700 / 800. The brand reads as a calmer system because of this.
+- **Negative tracking is part of the voice.** Display sizes use aggressive `-2.4` to `-0.6` px tracking. Do not revert to default tracking.
+- **Title Case for all headings and buttons (Chicago style).** Example: "Find Your Dream Government Job", "Browse by Job Type". No trailing periods on headings.
+- **Mono for the technical layer only.** Section eyebrows, code blocks, technical labels. Body paragraphs never set in mono.
+- **Weight 600 is the display ceiling.** The geometric sans never appears at 700 or heavier.
 
 ### Note on Font Substitutes
 The two primary faces are proprietary (custom-cut for the brand). Open-source substitutes:
@@ -720,7 +720,7 @@ The brand uses STACKED shadows — multiple small offsets layered to fake natura
 ### Do
 - Reserve `{colors.primary}` (`#171717`) for primary CTAs across the page. Black ink IS the conversion target.
 - Use `{rounded.pill}` 100 px for every marketing-scale CTA and `{rounded.sm}` 6 px for nav-scale buttons. The two pill scales coexist deliberately.
-- Set every headline in `{typography.display-*}` weight 600, sentence-case, often period-terminated. Aggressive negative tracking is part of the voice.
+- Set every headline in `{typography.display-*}` weight 600, Title Case (Chicago style), no trailing period. Aggressive negative tracking is part of the voice.
 - Use the brand mesh gradient as atmospheric decoration at hero scale only — never miniaturise it to an icon, never reduce to a single colour.
 - Layer stacked shadows (multiple small offsets with inset hairline) rather than single heavy drops. The brand's elevation is calmer than Material.
 - Cycle page surfaces in `{colors.canvas-soft}` → `{colors.canvas}` → `{colors.primary}` polarity-flipped bands; the dark band IS the depth cue.
@@ -728,7 +728,7 @@ The brand uses STACKED shadows — multiple small offsets layered to fake natura
 
 ### Don't
 - Don't introduce a sixth accent colour. The brand operates with ink + gray + the four-pair gradient palette; new accents flatten the voice.
-- Don't render headlines in all-caps. Sentence-case + negative tracking is non-negotiable.
+- Don't render headlines in all-caps or sentence-case. Title Case + negative tracking is the standard.
 - Don't drop a single heavy drop-shadow on cards. The brand's elevation is built from stacked small offsets + inset hairline rings.
 - Don't render the brand gradient at icon scale or in a single-colour reduced form. The gradient lives at hero scale only.
 - Don't promote the geometric sans to weight 700. The brand's display ceiling is 600.

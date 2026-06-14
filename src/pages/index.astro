@@ -8,16 +8,14 @@ const db = getDb();
 
 const jobTypes = [
   { slug: 'government', name: 'Government' },
-  { slug: 'psu', name: 'PSU / Semi-Govt' },
-  { slug: 'private', name: 'Private' },
-  { slug: 'freelance', name: 'Freelance / Gig' },
+  { slug: 'psu',        name: 'PSU / Semi-Govt' },
+  { slug: 'private',    name: 'Private' },
+  { slug: 'freelance',  name: 'Freelance / Gig' },
 ];
 
 const [totalRes, typeCountsRes, latestRes, featuredStatesRes, categoriesRes] = await Promise.all([
   db
-    .prepare(
-      `SELECT COUNT(*) AS n FROM jobs WHERE is_published = 1 AND last_date >= DATE('now')`
-    )
+    .prepare(`SELECT COUNT(*) AS n FROM jobs WHERE is_published = 1 AND last_date >= DATE('now')`)
     .first<{ n: number }>(),
   db
     .prepare(
@@ -79,11 +77,11 @@ const featuredStates = featuredStatesRes.results as Array<{
 const categories = categoriesRes.results as Array<{ name: string; slug: string }>;
 
 const quickLinks = [
-  { label: 'UPSC', href: '/jobs?q=UPSC' },
-  { label: 'SSC', href: '/jobs?q=SSC' },
+  { label: 'UPSC',     href: '/jobs?q=UPSC' },
+  { label: 'SSC',      href: '/jobs?q=SSC' },
   { label: 'Railways', href: '/category/railways' },
-  { label: 'Banking', href: '/category/banking' },
-  { label: 'Defence', href: '/category/defence' },
+  { label: 'Banking',  href: '/category/banking' },
+  { label: 'Defence',  href: '/category/defence' },
 ];
 
 const siteUrl = ((env as any).SITE_URL ?? '').replace(/\/$/, '');
@@ -94,39 +92,40 @@ const canonical = `${siteUrl}/`;
   description="Find latest government, PSU and private sector jobs across India. Browse by state, category and job type. Updated daily."
   canonical={canonical}
 >
-  <main style="font-family:Geist,Inter,system-ui,-apple-system,sans-serif;color:#171717;background:#ffffff;">
+  <main id="main-content">
 
     <!-- Hero -->
-    <section style="background:#fafafa;padding:96px 24px;border-bottom:1px solid #ebebeb;">
-      <div style="max-width:960px;margin:0 auto;text-align:center;">
-        <h1 style="font-size:48px;font-weight:600;line-height:48px;letter-spacing:-2.4px;color:#171717;margin:0 0 16px;">
-          Find your dream government job.
+    <section class="bg-canvas-soft border-b border-hairline py-24 px-6">
+      <div class="max-w-[960px] mx-auto text-center">
+        <h1 class="text-balance text-[48px] font-semibold leading-[48px] tracking-[-2.4px] text-ink mb-4">
+          Find Your Dream Government Job
         </h1>
-        <p style="font-size:18px;line-height:28px;color:#4d4d4d;margin:0 0 32px;">
+        <p class="text-lg leading-7 text-body mb-8">
           Browse {totalCount} sarkari and private jobs across India.
         </p>
 
-        <form action="/jobs" method="get" role="search" style="display:flex;gap:8px;max-width:560px;margin:0 auto 24px;flex-wrap:wrap;">
+        <form action="/jobs" method="get" role="search" class="flex gap-2 max-w-[560px] mx-auto mb-6 flex-wrap">
           <input
             type="search"
             name="q"
             placeholder="Search jobs by title, department…"
             aria-label="Search jobs"
-            style="flex:1 1 280px;height:48px;padding:0 12px;font-family:inherit;font-size:16px;color:#171717;background:#ffffff;border:1px solid #ebebeb;border-radius:6px;outline:none;"
+            autocomplete="off"
+            class="flex-[1_1_280px] h-12 px-3 font-sans text-base text-ink bg-canvas border border-hairline rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:border-transparent transition-shadow"
           />
           <button
             type="submit"
-            style="height:48px;padding:0 24px;font-family:inherit;font-size:16px;font-weight:500;color:#ffffff;background:#171717;border:none;border-radius:100px;cursor:pointer;"
+            class="h-12 px-6 font-sans text-base font-medium text-on-primary bg-ink border-none rounded-pill cursor-pointer hover:bg-[#2e2e2e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 transition-colors"
           >
             Search
           </button>
         </form>
 
-        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+        <div class="flex gap-2 flex-wrap justify-center">
           {quickLinks.map((q) => (
             <a
               href={q.href}
-              style="display:inline-block;padding:6px 16px;font-size:14px;color:#4d4d4d;background:#ffffff;border:1px solid #ebebeb;border-radius:64px;text-decoration:none;"
+              class="inline-block px-4 py-1.5 text-sm text-body bg-canvas border border-hairline rounded-pill-sm hover:bg-canvas-soft-2 hover:border-hairline-strong transition-colors"
             >
               {q.label}
             </a>
@@ -136,20 +135,20 @@ const canonical = `${siteUrl}/`;
     </section>
 
     <!-- Job-type cards -->
-    <section style="padding:64px 24px;max-width:1200px;margin:0 auto;">
-      <h2 style="font-size:32px;font-weight:600;line-height:40px;letter-spacing:-1.28px;margin:0 0 24px;">
-        Browse by job type.
+    <section class="py-16 px-6 max-w-[1200px] mx-auto">
+      <h2 class="text-balance text-[32px] font-semibold leading-10 tracking-[-1.28px] text-ink mb-6">
+        Browse by Job Type
       </h2>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
+      <div class="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4">
         {jobTypes.map((t) => (
           <a
             href={`/jobs?type=${t.slug}`}
-            style="display:block;padding:24px;background:#ffffff;border-radius:8px;text-decoration:none;color:#171717;box-shadow:0 0 0 1px #ebebeb inset, 0 1px 1px rgba(0,0,0,0.02), 0 2px 2px rgba(0,0,0,0.04);"
+            class="block p-6 bg-canvas rounded-md text-ink no-underline shadow-card hover:shadow-card-hover transition-all"
           >
-            <div style="font-size:24px;font-weight:600;line-height:32px;letter-spacing:-0.96px;">
+            <div class="text-2xl font-semibold leading-8 tracking-[-0.96px]">
               {t.name}
             </div>
-            <div style="font-size:14px;color:#888888;margin-top:4px;">
+            <div class="text-sm text-muted mt-1">
               {typeCountMap.get(t.slug) ?? 0} active jobs
             </div>
           </a>
@@ -158,17 +157,17 @@ const canonical = `${siteUrl}/`;
     </section>
 
     <!-- Latest jobs -->
-    <section style="padding:64px 24px;max-width:1200px;margin:0 auto;border-top:1px solid #ebebeb;">
-      <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:16px;margin:0 0 24px;">
-        <h2 style="font-size:32px;font-weight:600;line-height:40px;letter-spacing:-1.28px;margin:0;">
-          Latest jobs.
+    <section class="py-16 px-6 max-w-[1200px] mx-auto border-t border-hairline">
+      <div class="flex items-baseline justify-between flex-wrap gap-4 mb-6">
+        <h2 class="text-balance text-[32px] font-semibold leading-10 tracking-[-1.28px] text-ink m-0">
+          Latest Jobs
         </h2>
-        <a href="/jobs" style="font-size:16px;color:#0070f3;text-decoration:none;">View all jobs →</a>
+        <a href="/jobs" class="text-base text-link hover:underline">View all jobs →</a>
       </div>
       {latestJobs.length === 0 ? (
-        <p style="color:#4d4d4d;">No active jobs right now. Check back soon.</p>
+        <p class="text-body">No active jobs right now. Check back soon.</p>
       ) : (
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;">
+        <div class="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">
           {latestJobs.map((job) => <JobCard job={job} />)}
         </div>
       )}
@@ -176,21 +175,21 @@ const canonical = `${siteUrl}/`;
 
     <!-- Featured states -->
     {featuredStates.length > 0 && (
-      <section style="padding:64px 24px;max-width:1200px;margin:0 auto;border-top:1px solid #ebebeb;">
-        <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:16px;margin:0 0 24px;">
-          <h2 style="font-size:32px;font-weight:600;line-height:40px;letter-spacing:-1.28px;margin:0;">
-            Browse by state.
+      <section class="py-16 px-6 max-w-[1200px] mx-auto border-t border-hairline">
+        <div class="flex items-baseline justify-between flex-wrap gap-4 mb-6">
+          <h2 class="text-balance text-[32px] font-semibold leading-10 tracking-[-1.28px] text-ink m-0">
+            Browse by State
           </h2>
-          <a href="/states" style="font-size:16px;color:#0070f3;text-decoration:none;">View all states →</a>
+          <a href="/states" class="text-base text-link hover:underline">View all states →</a>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">
+        <div class="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3">
           {featuredStates.map((s) => (
             <a
               href={`/state/${s.slug}`}
-              style="display:block;padding:16px;background:#fafafa;border:1px solid #ebebeb;border-radius:8px;text-decoration:none;color:#171717;"
+              class="block p-4 bg-canvas-soft border border-hairline rounded-md text-ink no-underline hover:bg-canvas-soft-2 hover:border-hairline-strong transition-colors"
             >
-              <div style="font-size:16px;font-weight:500;">{s.name}</div>
-              <div style="font-size:14px;color:#888888;margin-top:2px;">{s.count} jobs</div>
+              <div class="text-base font-medium">{s.name}</div>
+              <div class="text-sm text-muted mt-0.5">{s.count} jobs</div>
             </a>
           ))}
         </div>
@@ -198,15 +197,15 @@ const canonical = `${siteUrl}/`;
     )}
 
     <!-- Browse by category -->
-    <section style="padding:64px 24px;max-width:1200px;margin:0 auto;border-top:1px solid #ebebeb;">
-      <h2 style="font-size:32px;font-weight:600;line-height:40px;letter-spacing:-1.28px;margin:0 0 24px;">
-        Browse by category.
+    <section class="py-16 px-6 max-w-[1200px] mx-auto border-t border-hairline">
+      <h2 class="text-balance text-[32px] font-semibold leading-10 tracking-[-1.28px] text-ink mb-6">
+        Browse by Category
       </h2>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+      <div class="flex flex-wrap gap-2">
         {categories.map((c) => (
           <a
             href={`/category/${c.slug}`}
-            style="display:inline-block;padding:8px 16px;font-size:14px;color:#171717;background:#ffffff;border:1px solid #ebebeb;border-radius:64px;text-decoration:none;"
+            class="inline-block px-4 py-2 text-sm text-ink bg-canvas border border-hairline rounded-pill-sm no-underline hover:bg-canvas-soft-2 hover:border-hairline-strong transition-colors"
           >
             {c.name}
           </a>

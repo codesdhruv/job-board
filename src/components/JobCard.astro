@@ -5,6 +5,7 @@ interface Props {
     title: string;
     dept_name?: string | null;
     type_name?: string | null;
+    type_slug?: string | null;
     state_name?: string | null;
     vacancies?: number | null;
     last_date: string;
@@ -19,23 +20,51 @@ today.setHours(0, 0, 0, 0);
 const last = new Date(job.last_date);
 const daysLeft = Math.floor((last.getTime() - today.getTime()) / 86_400_000);
 const isUrgent = daysLeft >= 0 && daysLeft <= 7;
+
+const badgeClass: Record<string, string> = {
+  government: 'bg-blue-50 text-blue-700 border-blue-200',
+  psu:        'bg-orange-50 text-orange-700 border-orange-200',
+  private:    'bg-green-50 text-green-700 border-green-200',
+  freelance:  'bg-purple-50 text-purple-700 border-purple-200',
+};
+const badge = job.type_slug ? (badgeClass[job.type_slug] ?? 'bg-canvas-soft text-body border-hairline') : '';
 ---
-<article>
-  <h2><a href={`/jobs/${job.slug}`}>{job.title}</a></h2>
-  {job.dept_name && <p>{job.dept_name}</p>}
-  <p>
-    {job.type_name && <span>[{job.type_name}]</span>}
-    {job.state_name && <span> · {job.state_name}</span>}
-  </p>
-  {job.vacancies != null && <p>Vacancies: {job.vacancies}</p>}
-  <p>
-    Last date:{' '}
-    {isUrgent ? (
-      <span style="color:#ee0000">{job.last_date}</span>
-    ) : (
-      <span>{job.last_date}</span>
+<article class="group flex flex-col gap-3 p-6 bg-canvas rounded-md shadow-card hover:shadow-card-hover transition-all">
+  <div class="flex items-start justify-between gap-3">
+    <h3 class="text-base font-medium leading-6 text-ink m-0 flex-1 min-w-0">
+      <a
+        href={`/jobs/${job.slug}`}
+        class="text-ink no-underline hover:text-link transition-colors line-clamp-2"
+      >
+        {job.title}
+      </a>
+    </h3>
+    {job.type_name && (
+      <span class={`shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${badge}`}>
+        {job.type_name}
+      </span>
     )}
-  </p>
-  {job.salary && <p>Salary: {job.salary}</p>}
-  <p><a href={`/jobs/${job.slug}`}>View Details →</a></p>
+  </div>
+
+  {job.dept_name && (
+    <p class="text-sm text-body m-0 truncate">{job.dept_name}</p>
+  )}
+
+  <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
+    {job.state_name && <span>{job.state_name}</span>}
+    {job.vacancies != null && <span>{job.vacancies} vacancies</span>}
+    {job.salary && <span>{job.salary}</span>}
+  </div>
+
+  <div class="flex items-center justify-between mt-auto pt-3 border-t border-hairline">
+    <span class={`text-sm font-medium ${isUrgent ? 'text-error' : 'text-muted'}`}>
+      {isUrgent ? `⚠ Closes ${job.last_date}` : `Closes ${job.last_date}`}
+    </span>
+    <a
+      href={`/jobs/${job.slug}`}
+      class="text-sm text-link hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link rounded-xs"
+    >
+      View details →
+    </a>
+  </div>
 </article>
