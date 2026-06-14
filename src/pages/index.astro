@@ -1,11 +1,230 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import { env } from 'cloudflare:workers';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import JobCard from '../components/JobCard.astro';
+import { getDb } from '../lib/db';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const db = getDb();
+
+const jobTypes = [
+  { slug: 'government', name: 'Government' },
+  { slug: 'psu', name: 'PSU / Semi-Govt' },
+  { slug: 'private', name: 'Private' },
+  { slug: 'freelance', name: 'Freelance / Gig' },
+];
+
+const [totalRes, typeCountsRes, latestRes, featuredStatesRes, categoriesRes] = await Promise.all([
+  db
+    .prepare(
+      `SELECT COUNT(*) AS n FROM jobs WHERE is_published = 1 AND last_date >= DATE('now')`
+    )
+    .first<{ n: number }>(),
+  db
+    .prepare(
+      `SELECT jt.slug AS slug, COUNT(*) AS count
+       FROM jobs j JOIN job_types jt ON j.job_type_id = jt.id
+       WHERE j.is_published = 1 AND j.last_date >= DATE('now')
+       GROUP BY jt.slug`
+    )
+    .all(),
+  db
+    .prepare(
+      `SELECT j.id, j.slug, j.title, j.last_date, j.vacancies, j.salary,
+              jt.name AS type_name, jt.slug AS type_slug,
+              s.name AS state_name, d.name AS dept_name
+       FROM jobs j
+       LEFT JOIN job_types jt ON j.job_type_id = jt.id
+       LEFT JOIN states s ON j.state_id = s.id
+       LEFT JOIN departments d ON j.department_id = d.id
+       WHERE j.is_published = 1 AND j.last_date >= DATE('now')
+       ORDER BY j.created_at DESC LIMIT 10`
+    )
+    .all(),
+  db
+    .prepare(
+      `SELECT s.name, s.slug, COUNT(j.id) AS count
+       FROM states s JOIN jobs j ON j.state_id = s.id
+       WHERE j.is_published = 1 AND j.last_date >= DATE('now')
+       GROUP BY s.id ORDER BY count DESC LIMIT 8`
+    )
+    .all(),
+  db.prepare(`SELECT name, slug FROM categories ORDER BY name`).all(),
+]);
+
+const totalCount = totalRes?.n ?? 0;
+
+const typeCountMap = new Map<string, number>(
+  (typeCountsRes.results as { slug: string; count: number }[]).map((r) => [r.slug, r.count])
+);
+
+const latestJobs = latestRes.results as Array<{
+  id: number;
+  slug: string;
+  title: string;
+  last_date: string;
+  vacancies: number | null;
+  salary: string | null;
+  type_name: string | null;
+  type_slug: string | null;
+  state_name: string | null;
+  dept_name: string | null;
+}>;
+
+const featuredStates = featuredStatesRes.results as Array<{
+  name: string;
+  slug: string;
+  count: number;
+}>;
+
+const categories = categoriesRes.results as Array<{ name: string; slug: string }>;
+
+const quickLinks = [
+  { label: 'UPSC', href: '/jobs?q=UPSC' },
+  { label: 'SSC', href: '/jobs?q=SSC' },
+  { label: 'Railways', href: '/category/railways' },
+  { label: 'Banking', href: '/category/banking' },
+  { label: 'Defence', href: '/category/defence' },
+];
+
+const siteUrl = ((env as any).SITE_URL ?? '').replace(/\/$/, '');
+const canonical = `${siteUrl}/`;
 ---
+<BaseLayout
+  title="SarkariNaukriBoard — Government & Private Jobs in India 2026"
+  description="Find latest government, PSU and private sector jobs across India. Browse by state, category and job type. Updated daily."
+  canonical={canonical}
+>
+  <main style="font-family:Geist,Inter,system-ui,-apple-system,sans-serif;color:#171717;background:#ffffff;">
 
-<Layout>
-	<Welcome />
-</Layout>
+    <!-- Hero -->
+    <section style="background:#fafafa;padding:96px 24px;border-bottom:1px solid #ebebeb;">
+      <div style="max-width:960px;margin:0 auto;text-align:center;">
+        <h1 style="font-size:48px;font-weight:600;line-height:48px;letter-spacing:-2.4px;color:#171717;margin:0 0 16px;">
+          Find your dream government job.
+        </h1>
+        <p style="font-size:18px;line-height:28px;color:#4d4d4d;margin:0 0 32px;">
+          Browse {totalCount} sarkari and private jobs across India.
+        </p>
+
+        <form action="/jobs" method="get" role="search" style="display:flex;gap:8px;max-width:560px;margin:0 auto 24px;flex-wrap:wrap;">
+          <input
+            type="search"
+            name="q"
+            placeholder="Search jobs by title, department…"
+            aria-label="Search jobs"
+            style="flex:1 1 280px;height:48px;padding:0 12px;font-family:inherit;font-size:16px;color:#171717;background:#ffffff;border:1px solid #ebebeb;border-radius:6px;outline:none;"
+          />
+          <button
+            type="submit"
+            style="height:48px;padding:0 24px;font-family:inherit;font-size:16px;font-weight:500;color:#ffffff;background:#171717;border:none;border-radius:100px;cursor:pointer;"
+          >
+            Search
+          </button>
+        </form>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+          {quickLinks.map((q) => (
+            <a
+              href={q.href}
+              style="display:inline-block;padding:6px 16px;font-size:14px;color:#4d4d4d;background:#ffffff;border:1px solid #ebebeb;border-radius:64px;text-decoration:none;"
+            >
+              {q.label}
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Job-type cards -->
+    <section style="padding:64px 24px;max-width:1200px;margin:0 auto;">
+      <h2 style="font-size:32px;font-weight:600;line-height:40px;letter-spacing:-1.28px;margin:0 0 24px;">
+        Browse by job type.
+      </h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
+        {jobTypes.map((t) => (
+          <a
+            href={`/jobs?type=${t.slug}`}
+            style="display:block;padding:24px;background:#ffffff;border-radius:8px;text-decoration:none;color:#171717;box-shadow:0 0 0 1px #ebebeb inset, 0 1px 1px rgba(0,0,0,0.02), 0 2px 2px rgba(0,0,0,0.04);"
+          >
+            <div style="font-size:24px;font-weight:600;line-height:32px;letter-spacing:-0.96px;">
+              {t.name}
+            </div>
+            <div style="font-size:14px;color:#888888;margin-top:4px;">
+              {typeCountMap.get(t.slug) ?? 0} active jobs
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <!-- Latest jobs -->
+    <section style="padding:64px 24px;max-width:1200px;margin:0 auto;border-top:1px solid #ebebeb;">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:16px;margin:0 0 24px;">
+        <h2 style="font-size:32px;font-weight:600;line-height:40px;letter-spacing:-1.28px;margin:0;">
+          Latest jobs.
+        </h2>
+        <a href="/jobs" style="font-size:16px;color:#0070f3;text-decoration:none;">View all jobs →</a>
+      </div>
+      {latestJobs.length === 0 ? (
+        <p style="color:#4d4d4d;">No active jobs right now. Check back soon.</p>
+      ) : (
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;">
+          {latestJobs.map((job) => <JobCard job={job} />)}
+        </div>
+      )}
+    </section>
+
+    <!-- Featured states -->
+    {featuredStates.length > 0 && (
+      <section style="padding:64px 24px;max-width:1200px;margin:0 auto;border-top:1px solid #ebebeb;">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:16px;margin:0 0 24px;">
+          <h2 style="font-size:32px;font-weight:600;line-height:40px;letter-spacing:-1.28px;margin:0;">
+            Browse by state.
+          </h2>
+          <a href="/states" style="font-size:16px;color:#0070f3;text-decoration:none;">View all states →</a>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">
+          {featuredStates.map((s) => (
+            <a
+              href={`/state/${s.slug}`}
+              style="display:block;padding:16px;background:#fafafa;border:1px solid #ebebeb;border-radius:8px;text-decoration:none;color:#171717;"
+            >
+              <div style="font-size:16px;font-weight:500;">{s.name}</div>
+              <div style="font-size:14px;color:#888888;margin-top:2px;">{s.count} jobs</div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <!-- Browse by category -->
+    <section style="padding:64px 24px;max-width:1200px;margin:0 auto;border-top:1px solid #ebebeb;">
+      <h2 style="font-size:32px;font-weight:600;line-height:40px;letter-spacing:-1.28px;margin:0 0 24px;">
+        Browse by category.
+      </h2>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        {categories.map((c) => (
+          <a
+            href={`/category/${c.slug}`}
+            style="display:inline-block;padding:8px 16px;font-size:14px;color:#171717;background:#ffffff;border:1px solid #ebebeb;border-radius:64px;text-decoration:none;"
+          >
+            {c.name}
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="padding:64px 24px;border-top:1px solid #ebebeb;background:#ffffff;">
+      <div style="max-width:1200px;margin:0 auto;display:flex;gap:24px;flex-wrap:wrap;justify-content:space-between;align-items:center;font-size:14px;color:#4d4d4d;">
+        <div>© 2026 SarkariNaukriBoard</div>
+        <div style="display:flex;gap:24px;flex-wrap:wrap;">
+          <a href="/states" style="color:#4d4d4d;text-decoration:none;">States</a>
+          <a href="/jobs" style="color:#4d4d4d;text-decoration:none;">All jobs</a>
+          <a href="/sitemap.xml" style="color:#4d4d4d;text-decoration:none;">Sitemap</a>
+        </div>
+      </div>
+    </footer>
+
+  </main>
+</BaseLayout>
