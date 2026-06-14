@@ -1,4 +1,5 @@
 ---
+import { env } from 'cloudflare:workers';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import JobCard from '../../components/JobCard.astro';
 import { getDb } from '../../lib/db';
@@ -114,8 +115,16 @@ for (const [key, value] of Astro.url.searchParams.entries()) {
 
 const states = dropdownStates.filter((s) => s.is_union_territory === 0);
 const uts = dropdownStates.filter((s) => s.is_union_territory === 1);
+
+const siteUrl = (env as any).SITE_URL ?? '';
+const listingCanonical = siteUrl ? `${siteUrl.replace(/\/$/, '')}/jobs` : undefined;
+const listingDescription = 'Browse government, PSU and private jobs in India. Filter by state, category and job type. Updated daily.';
 ---
-<BaseLayout title="Jobs — SarkariNaukriBoard">
+<BaseLayout
+  title="Browse Government & Private Jobs in India 2026 | SarkariNaukriBoard"
+  description={listingDescription}
+  canonical={listingCanonical}
+>
   <h1>Jobs</h1>
 
   <form method="get" action="/jobs" role="search" style="margin-bottom:24px">

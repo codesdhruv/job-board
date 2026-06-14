@@ -71,15 +71,22 @@ const jsonLd = job
     )
   : null;
 
-const stripped = job?.description
-  ? job.description.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()
-  : '';
+function formatDate(dateStr: string) {
+  return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-IN', {
+    day: 'numeric', month: 'short', year: 'numeric',
+  });
+}
 const metaDescription = job
-  ? stripped
-    ? stripped.slice(0, 155)
-    : `${job.title}${job.dept_name ? ' at ' + job.dept_name : ''}${job.state_name ? ' — ' + job.state_name : ''}. Apply by ${job.last_date}.`
+  ? [
+      `Apply for ${job.title}${job.dept_name ? ' at ' + job.dept_name : ''}.`,
+      job.vacancies ? `${job.vacancies} vacancies.` : '',
+      `Last date: ${formatDate(job.last_date)}.`,
+      job.state_name ? `State: ${job.state_name}.` : '',
+    ].filter(Boolean).join(' ').slice(0, 155)
   : undefined;
-const pageTitle = job ? `${job.title} — SarkariNaukriBoard` : 'Not found — SarkariNaukriBoard';
+const pageTitle = job
+  ? `${job.title}${job.dept_name ? ' — ' + job.dept_name : ''} | SarkariNaukriBoard`
+  : 'Not found — SarkariNaukriBoard';
 ---
 <BaseLayout title={pageTitle} description={metaDescription} canonical={canonical}>
   {jsonLd && (
