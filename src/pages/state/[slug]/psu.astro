@@ -1,0 +1,64 @@
+---
+import { env } from 'cloudflare:workers';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import JobCard from '../../../components/JobCard.astro';
+import { getDb } from '../../../lib/db';
+
+const db = getDb();
+const { slug } = Astro.params;
+
+const stateRow = await db
+  .prepare(`SELECT id, name, slug FROM states WHERE slug = ?`)
+  .bind(slug)
+  .first<{ id: number; name: string; slug: string }>();
+
+if (!stateRow) {
+  return new Response(null, { status: 404 });
+}
+
+const { results } = await db
+  .prepare(
+    `SELECT j.*, jt.name AS type_name, jt.slug AS type_slug,
+            c.name AS category_name, s.name AS state_name,
+            s.slug AS state_slug, d.name AS dept_name, d.logo_r2_key
+     FROM jobs j
+     LEFT JOIN job_types jt ON j.job_type_id = jt.id
+     LEFT JOIN categories c ON j.category_id = c.id
+     LEFT JOIN states s ON j.state_id = s.id
+     LEFT JOIN departments d ON j.department_id = d.id
+     WHERE j.is_published = 1
+       AND j.last_date >= DATE('now')
+       AND s.slug = ?
+       AND jt.slug = 'psu'
+     ORDER BY j.created_at DESC`
+  )
+  .bind(stateRow.slug)
+  .all();
+
+const count = results.length;
+
+const title = `PSU Jobs in ${stateRow.name} 2026 — Sarkari Naukri ${stateRow.name}`;
+const description = `Latest PSU and semi-government jobs in ${stateRow.name}. ${count} active vacancies. Apply now.`;
+const siteUrl = (env as any).SITE_URL ?? '';
+const canonical = siteUrl ? `${siteUrl.replace(/\/$/, '')}/state/${stateRow.slug}/psu` : undefined;
+---
+<BaseLayout title={title} description={description} canonical={canonical}>
+  <nav aria-label="Breadcrumb" style="margin-bottom:16px;color:#4d4d4d;font-size:14px">
+    <a href="/" style="color:#0070f3;text-decoration:none">Home</a>
+    <span style="margin:0 8px;color:#888888">›</span>
+    <a href="/states" style="color:#0070f3;text-decoration:none">States</a>
+    <span style="margin:0 8px;color:#888888">›</span>
+    <a href={`/state/${stateRow.slug}`} style="color:#0070f3;text-decoration:none">{stateRow.name}</a>
+    <span style="margin:0 8px;color:#888888">›</span>
+    <span>PSU</span>
+  </nav>
+
+  <h1>PSU Jobs in {stateRow.name}</h1>
+  <p style="color:#4d4d4d;margin-bottom:24px">{count} active PSU vacancies in {stateRow.name}</p>
+
+  {count === 0 ? (
+    <p>No active jobs in this state right now. Check back soon.</p>
+  ) : (
+    results.map((j: any) => <JobCard job={j} />)
+  )}
+</BaseLayout>
