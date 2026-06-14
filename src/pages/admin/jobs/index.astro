@@ -1,0 +1,144 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getDb } from '../../../lib/db';
+
+const db = getDb();
+
+const url = new URL(Astro.request.url);
+const pageParam = parseInt(url.searchParams.get('page') ?? '1', 10);
+const page = Number.isFinite(pageParam) && pageParam >= 1 ? pageParam : 1;
+const pageSize = 50;
+const offset = (page - 1) * pageSize;
+
+const flash = url.searchParams.get('success') === '1'
+  ? 'Job posted successfully.'
+  : url.searchParams.get('updated') === '1'
+    ? 'Job updated.'
+    : url.searchParams.get('deleted') === '1'
+      ? 'Job deleted.'
+      : null;
+
+const [countRes, rowsRes] = await Promise.all([
+  db.prepare('SELECT COUNT(*) AS n FROM jobs').first<{ n: number }>(),
+  db.prepare(`
+    SELECT j.id, j.title, j.last_date, j.is_published,
+           jt.name AS type_name,
+           s.name AS state_name
+    FROM jobs j
+    LEFT JOIN job_types jt ON j.job_type_id = jt.id
+    LEFT JOIN states s ON j.state_id = s.id
+    ORDER BY j.created_at DESC
+    LIMIT ? OFFSET ?
+  `).bind(pageSize, offset).all<{
+    id: number;
+    title: string;
+    last_date: string;
+    is_published: number;
+    type_name: string | null;
+    state_name: string | null;
+  }>(),
+]);
+
+const total = countRes?.n ?? 0;
+const totalPages = Math.max(1, Math.ceil(total / pageSize));
+const rows = rowsRes.results;
+const today = new Date().toISOString().slice(0, 10);
+
+function formatDate(dateStr: string): string {
+  const normalized = dateStr.includes('T') || dateStr.includes(' ')
+    ? dateStr.replace(' ', 'T')
+    : dateStr + 'T00:00:00';
+  return new Date(normalized).toLocaleDateString('en-IN', {
+    day: 'numeric', month: 'short', year: 'numeric',
+  });
+}
+
+function statusFor(row: { is_published: number; last_date: string }): { label: string; color: string } {
+  if (row.is_published === 0) return { label: 'Draft', color: '#f5a623' };
+  if (row.last_date.slice(0, 10) < today) return { label: 'Expired', color: '#ee0000' };
+  return { label: 'Live', color: '#22a565' };
+}
+
+const windowSize = 5;
+let pageStart = Math.max(1, page - Math.floor(windowSize / 2));
+let pageEnd = Math.min(totalPages, pageStart + windowSize - 1);
+pageStart = Math.max(1, pageEnd - windowSize + 1);
+const pageNumbers: number[] = [];
+for (let i = pageStart; i <= pageEnd; i++) pageNumbers.push(i);
+---
+<AdminLayout title="All Jobs — SarkariNaukriBoard">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin:0 0 24px;">
+    <h1 style="font-size:22px;font-weight:600;letter-spacing:-0.4px;color:#171717;margin:0;">All Jobs</h1>
+    <a href="/admin/jobs/new" style="display:inline-block;background:#171717;color:#fff;text-decoration:none;font-size:14px;font-weight:500;padding:8px 14px;border-radius:6px;">+ Add New Job</a>
+  </div>
+
+  {flash && (
+    <div style="background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;padding:10px 14px;border-radius:6px;font-size:14px;margin-bottom:20px;">
+      {flash}
+    </div>
+  )}
+
+  {rows.length === 0 ? (
+    <p style="font-size:14px;color:#888888;">No jobs yet. Click + Add New Job to create one.</p>
+  ) : (
+    <div style="background:#fff;border:1px solid #ebebeb;border-radius:8px;overflow:hidden;">
+      <table style="width:100%;border-collapse:collapse;font-size:14px;">
+        <thead>
+          <tr style="background:#fafafa;border-bottom:1px solid #ebebeb;">
+            <th style="text-align:left;padding:10px 16px;font-weight:600;color:#171717;">ID</th>
+            <th style="text-align:left;padding:10px 16px;font-weight:600;color:#171717;">Title</th>
+            <th style="text-align:left;padding:10px 16px;font-weight:600;color:#171717;">Type</th>
+            <th style="text-align:left;padding:10px 16px;font-weight:600;color:#171717;">State</th>
+            <th style="text-align:left;padding:10px 16px;font-weight:600;color:#171717;">Last Date</th>
+            <th style="text-align:left;padding:10px 16px;font-weight:600;color:#171717;">Status</th>
+            <th style="text-align:left;padding:10px 16px;font-weight:600;color:#171717;">Edit</th>
+            <th style="text-align:left;padding:10px 16px;font-weight:600;color:#171717;">Delete</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, i) => {
+            const status = statusFor(row);
+            return (
+              <tr style={i % 2 === 1 ? 'background:#fafafa;' : ''}>
+                <td style="padding:10px 16px;color:#888888;">{row.id}</td>
+                <td style="padding:10px 16px;color:#171717;">{row.title}</td>
+                <td style="padding:10px 16px;color:#4d4d4d;">{row.type_name ?? '—'}</td>
+                <td style="padding:10px 16px;color:#4d4d4d;">{row.state_name ?? '—'}</td>
+                <td style="padding:10px 16px;color:#4d4d4d;">{formatDate(row.last_date)}</td>
+                <td style="padding:10px 16px;"><span style={`color:${status.color};font-weight:500;`}>{status.label}</span></td>
+                <td style="padding:10px 16px;"><a href={`/admin/jobs/${row.id}/edit`} style="color:#0070f3;text-decoration:none;">Edit</a></td>
+                <td style="padding:10px 16px;">
+                  <form method="POST" action={`/admin/jobs/${row.id}/delete`} onsubmit="return confirm('Delete this job?')" style="display:inline;margin:0;">
+                    <button type="submit" style="background:none;border:none;color:#ee0000;cursor:pointer;font:inherit;padding:0;">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  )}
+
+  {totalPages > 1 && (
+    <div style="display:flex;justify-content:center;align-items:center;gap:6px;margin-top:24px;font-size:14px;">
+      {page > 1 ? (
+        <a href={`/admin/jobs?page=${page - 1}`} style="color:#0070f3;text-decoration:none;padding:6px 10px;">« Prev</a>
+      ) : (
+        <span style="color:#cccccc;padding:6px 10px;">« Prev</span>
+      )}
+      {pageNumbers.map(n => (
+        n === page ? (
+          <span style="color:#171717;font-weight:600;padding:6px 10px;">{n}</span>
+        ) : (
+          <a href={`/admin/jobs?page=${n}`} style="color:#0070f3;text-decoration:none;padding:6px 10px;">{n}</a>
+        )
+      ))}
+      {page < totalPages ? (
+        <a href={`/admin/jobs?page=${page + 1}`} style="color:#0070f3;text-decoration:none;padding:6px 10px;">Next »</a>
+      ) : (
+        <span style="color:#cccccc;padding:6px 10px;">Next »</span>
+      )}
+    </div>
+  )}
+</AdminLayout>
