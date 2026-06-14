@@ -114,7 +114,7 @@ src/
   middleware/
     index.ts                    ✓ auth guard for /admin/*
 public/
-  robots.txt                    —
+  robots.txt                    ✓ F-24 — static file; disallows /admin/ and /admin/*; Sitemap: https://example.com/sitemap.xml (matches SITE_URL in wrangler.jsonc)
 schema.sql                      ✓ full schema + seed data
 ```
 
@@ -185,7 +185,7 @@ Set in Cloudflare dashboard → Workers → Settings → Variables.
 - **F-13** ✓ RSS feed — `/rss.xml`; latest 50 published non-expired jobs; RFC 822 `pubDate`; XML-escaped; RSS 2.0. Verified 2026-06-14.
 - **F-21** ✓ SEO meta tags — `<meta name="robots" content="index, follow">` in BaseLayout (all public pages); `noindex, nofollow` in AdminLayout (all admin pages). Per-page unique title, ≤155-char description, and canonical implemented on: `/` (homepage, pre-existing), `/jobs` (added 2026-06-14), `/jobs/[slug]` (title format fixed to include dept_name; description format fixed to spec template, 2026-06-14), `/state/[slug]` + sub-pages (pre-existing), `/category/[slug]` (pre-existing). Verified 2026-06-14 — see `.claude/plans/16-SEO-Meta-Tags-F21.md`.
 - **F-22** ✓ KV caching — `getListingCached()` wraps jobs query on `/jobs` and `/state/[slug]` (5-min TTL); counts query on `/jobs` uses `counts:all` key (10-min TTL); keyword search bypasses cache; `invalidateAllListingCaches()` ready for admin wiring (deferred to admin prompts). Verified build 2026-06-14 — see `.claude/plans/18-KV-Caching-F22.md`.
-- **F-24** robots.txt — disallow `/admin/`; include sitemap URL
+- **F-24** ✓ robots.txt — `public/robots.txt`; `Disallow: /admin/` + `Disallow: /admin/*`; `Sitemap: https://example.com/sitemap.xml`. Static file — update URL when deploying to real domain. Verified 2026-06-14.
 
 ---
 
