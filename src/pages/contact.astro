@@ -1,0 +1,32 @@
+---
+import { env } from 'cloudflare:workers';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const siteUrl = ((env as any).SITE_URL ?? '').replace(/\/$/, '');
+const canonical = `${siteUrl}/contact`;
+---
+<BaseLayout
+  title="Contact Us — SarkariNaukriBoard"
+  description="Contact SarkariNaukriBoard. Reach out via email for questions, corrections or partnership."
+  canonical={canonical}
+>
+  <main style="font-family:Geist,Inter,system-ui,-apple-system,sans-serif;color:#171717;background:#ffffff;">
+    <div style="max-width:720px;margin:0 auto;padding:64px 24px;">
+      <h1 style="font-size:40px;font-weight:600;line-height:48px;letter-spacing:-1.6px;margin:0 0 24px;">
+        Contact Us
+      </h1>
+      <p style="font-size:16px;line-height:28px;color:#4d4d4d;margin:0 0 32px;">
+        Have a question, found an incorrect listing, or want to discuss a partnership? Drop us an email and we'll get back to you as soon as possible.
+      </p>
+      <div style="padding:24px;background:#fafafa;border:1px solid #ebebeb;border-radius:8px;display:inline-block;">
+        <p style="font-size:14px;color:#888888;margin:0 0 4px;text-transform:uppercase;letter-spacing:0.05em;font-weight:500;">Email</p>
+        <a
+          href="mailto:contact@yourdomain.com"
+          style="font-size:18px;color:#0070f3;text-decoration:none;font-weight:500;"
+        >
+          contact@yourdomain.com
+        </a>
+      </div>
+    </div>
+  </main>
+</BaseLayout>

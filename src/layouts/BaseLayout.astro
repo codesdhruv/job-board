@@ -20,5 +20,19 @@ const { title = 'SarkariNaukriBoard', description, canonical } = Astro.props;
   </head>
   <body>
     <slot />
+    <footer style="padding:64px 24px;border-top:1px solid #ebebeb;background:#ffffff;font-family:Geist,Inter,system-ui,-apple-system,sans-serif;">
+      <div style="max-width:1200px;margin:0 auto;display:flex;gap:24px;flex-wrap:wrap;justify-content:space-between;align-items:center;font-size:14px;color:#4d4d4d;">
+        <div>© 2026 SarkariNaukriBoard</div>
+        <div style="display:flex;gap:24px;flex-wrap:wrap;">
+          <a href="/states" style="color:#4d4d4d;text-decoration:none;">States</a>
+          <a href="/jobs" style="color:#4d4d4d;text-decoration:none;">All jobs</a>
+          <a href="/about" style="color:#4d4d4d;text-decoration:none;">About</a>
+          <a href="/contact" style="color:#4d4d4d;text-decoration:none;">Contact</a>
+          <a href="/privacy-policy" style="color:#4d4d4d;text-decoration:none;">Privacy</a>
+          <a href="/terms" style="color:#4d4d4d;text-decoration:none;">Terms</a>
+          <a href="/sitemap.xml" style="color:#4d4d4d;text-decoration:none;">Sitemap</a>
+        </div>
+      </div>
+    </footer>
   </body>
 </html>

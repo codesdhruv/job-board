@@ -62,7 +62,7 @@ export async function GET(): Promise<Response> {
   const psuStates = new Set((psuStatesRes.results ?? []).map((r) => r.slug));
   const cats = catsRes.results ?? [];
 
-  const staticUrls = ['/', '/jobs', '/states'];
+  const staticUrls = ['/', '/jobs', '/states', '/about', '/privacy-policy', '/terms', '/contact'];
 
   const lines: string[] = [
     '<?xml version="1.0" encoding="UTF-8"?>',
