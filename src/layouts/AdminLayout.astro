@@ -4,6 +4,16 @@ interface Props {
 }
 
 const { title = 'Admin — SarkariNaukriBoard' } = Astro.props;
+
+const path = Astro.url.pathname;
+const showSidebar = path !== '/admin/login';
+
+const navLinks = [
+  { href: '/admin/dashboard', label: 'Dashboard' },
+  { href: '/admin/jobs',      label: 'All Jobs' },
+  { href: '/admin/jobs/new',  label: 'Add New Job' },
+  { href: '/admin/logout',    label: 'Logout' },
+];
 ---
 <!doctype html>
 <html lang="en">
@@ -12,8 +22,71 @@ const { title = 'Admin — SarkariNaukriBoard' } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
     <title>{title}</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Geist, system-ui, sans-serif;
+        background: #fafafa;
+        color: #4d4d4d;
+        display: flex;
+        min-height: 100vh;
+      }
+      aside {
+        width: 220px;
+        flex-shrink: 0;
+        background: #fff;
+        border-right: 1px solid #ebebeb;
+        display: flex;
+        flex-direction: column;
+        padding: 24px 0;
+      }
+      .site-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: #171717;
+        letter-spacing: -0.2px;
+        padding: 0 20px 20px;
+        border-bottom: 1px solid #ebebeb;
+        margin-bottom: 16px;
+      }
+      nav a {
+        display: block;
+        padding: 9px 20px;
+        font-size: 14px;
+        color: #4d4d4d;
+        text-decoration: none;
+        border-radius: 0;
+        transition: background 0.1s;
+      }
+      nav a:hover { background: #fafafa; color: #171717; }
+      nav a[aria-current="page"] {
+        color: #171717;
+        font-weight: 600;
+        background: #f4f4f4;
+      }
+      main {
+        flex: 1;
+        padding: 32px 36px;
+        min-width: 0;
+      }
+    </style>
   </head>
   <body>
-    <slot />
+    {showSidebar && (
+      <aside>
+        <div class="site-name">SarkariNaukriBoard</div>
+        <nav>
+          {navLinks.map(link => (
+            <a href={link.href} aria-current={path === link.href ? 'page' : undefined}>
+              {link.label}
+            </a>
+          ))}
+        </nav>
+      </aside>
+    )}
+    <main>
+      <slot />
+    </main>
   </body>
 </html>
