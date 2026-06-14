@@ -1,4 +1,6 @@
 ---
+import Navbar from '../components/Navbar.astro';
+
 interface Props {
   title?: string;
   description?: string;
@@ -13,12 +15,18 @@ const { title = 'SarkariNaukriBoard', description, canonical } = Astro.props;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="index, follow" />
+    <script is:inline>
+      const t = localStorage.getItem('theme') ||
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.classList.toggle('dark', t === 'dark');
+    </script>
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
     {canonical && <link rel="canonical" href={canonical} />}
     <slot name="head" />
   </head>
   <body>
+    <Navbar />
     <slot />
     <footer style="padding:64px 24px;border-top:1px solid #ebebeb;background:#ffffff;font-family:Geist,Inter,system-ui,-apple-system,sans-serif;">
       <div style="max-width:1200px;margin:0 auto;display:flex;gap:24px;flex-wrap:wrap;justify-content:space-between;align-items:center;font-size:14px;color:#4d4d4d;">
