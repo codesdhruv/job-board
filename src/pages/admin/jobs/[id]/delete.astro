@@ -1,0 +1,20 @@
+---
+import { env } from 'cloudflare:workers';
+import { getDb } from '../../../../lib/db';
+import { invalidateAllListingCaches } from '../../../../lib/kv';
+
+if (Astro.request.method !== 'POST') {
+  return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'POST' } });
+}
+
+const id = parseInt(Astro.params.id ?? '', 10);
+if (Number.isNaN(id)) return new Response(null, { status: 404 });
+
+const db = getDb();
+await db.prepare('DELETE FROM jobs WHERE id = ?').bind(id).run();
+
+const kv = (env as any).KV as KVNamespace | undefined;
+if (kv) await invalidateAllListingCaches(kv);
+
+return Astro.redirect('/admin/jobs?deleted=1');
+---

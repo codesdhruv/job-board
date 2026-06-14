@@ -1,0 +1,407 @@
+---
+import { env } from 'cloudflare:workers';
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getDb, type JobRow, type JobTypeRow, type StateRow, type CategoryRow, type DepartmentRow } from '../../../../lib/db';
+import { invalidateAllListingCaches } from '../../../../lib/kv';
+
+const db = getDb();
+
+const jobId = parseInt(Astro.params.id ?? '', 10);
+if (Number.isNaN(jobId)) return new Response(null, { status: 404 });
+
+const existingJob = await db.prepare('SELECT * FROM jobs WHERE id = ? LIMIT 1').bind(jobId).first<JobRow>();
+if (!existingJob) return new Response(null, { status: 404 });
+
+const originalSlug = existingJob.slug;
+
+function slugify(s: string): string {
+  return s.toLowerCase().trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 80);
+}
+
+async function makeUniqueSlugExcluding(base: string, excludeId: number): Promise<string> {
+  let candidate = base;
+  let suffix = 2;
+  while (true) {
+    const row = await db.prepare('SELECT COUNT(*) AS n FROM jobs WHERE slug = ? AND id != ?')
+      .bind(candidate, excludeId).first<{ n: number }>();
+    if (!row || row.n === 0) return candidate;
+    candidate = `${base}-${suffix}`;
+    suffix++;
+  }
+}
+
+const [jobTypesRes, statesRes, categoriesRes, deptsRes] = await Promise.all([
+  db.prepare('SELECT id, name, slug FROM job_types ORDER BY id').all<JobTypeRow>(),
+  db.prepare('SELECT id, name, slug, is_union_territory FROM states ORDER BY is_union_territory, name').all<StateRow>(),
+  db.prepare('SELECT id, name, slug FROM categories ORDER BY name').all<CategoryRow>(),
+  db.prepare('SELECT id, name FROM departments ORDER BY name').all<DepartmentRow>(),
+]);
+
+const jobTypes = jobTypesRes.results;
+const allStates = statesRes.results;
+const categories = categoriesRes.results;
+const departments = deptsRes.results;
+
+const allIndiaState = allStates.find(s => s.slug === 'all-india');
+const statesOnly = allStates.filter(s => s.is_union_territory === 0 && s.slug !== 'all-india');
+const unionTerritories = allStates.filter(s => s.is_union_territory === 1);
+
+const today = new Date().toISOString().slice(0, 10);
+
+type Values = {
+  title: string; department_id: string; job_type_id: string; category_id: string;
+  state_id: string; location: string; vacancies: string; qualification: string;
+  age_limit: string; salary: string; last_date: string; apply_url: string;
+  apply_email: string; description: string; is_published: string; slug: string;
+};
+type Errors = Partial<Record<keyof Values | 'form', string>>;
+
+// Seed values from the existing job on GET
+let values: Values = {
+  title:         existingJob.title,
+  department_id: existingJob.department_id != null ? String(existingJob.department_id) : '',
+  job_type_id:   existingJob.job_type_id != null ? String(existingJob.job_type_id) : '',
+  category_id:   existingJob.category_id != null ? String(existingJob.category_id) : '',
+  state_id:      existingJob.state_id != null ? String(existingJob.state_id) : '',
+  location:      existingJob.location ?? '',
+  vacancies:     existingJob.vacancies != null ? String(existingJob.vacancies) : '',
+  qualification: existingJob.qualification ?? '',
+  age_limit:     existingJob.age_limit ?? '',
+  salary:        existingJob.salary ?? '',
+  last_date:     existingJob.last_date,
+  apply_url:     existingJob.apply_url ?? '',
+  apply_email:   existingJob.apply_email ?? '',
+  description:   existingJob.description ?? '',
+  is_published:  String(existingJob.is_published),
+  slug:          existingJob.slug,
+};
+let errors: Errors = {};
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const g = (k: string) => String(form.get(k) ?? '').trim();
+
+  values = {
+    title:         g('title'),
+    department_id: g('department_id'),
+    job_type_id:   g('job_type_id'),
+    category_id:   g('category_id'),
+    state_id:      g('state_id'),
+    location:      g('location'),
+    vacancies:     g('vacancies'),
+    qualification: g('qualification'),
+    age_limit:     g('age_limit'),
+    salary:        g('salary'),
+    last_date:     g('last_date'),
+    apply_url:     g('apply_url'),
+    apply_email:   g('apply_email'),
+    description:   g('description'),
+    is_published:  form.get('is_published') ? '1' : '0',
+    slug:          g('slug'),
+  };
+
+  // Validate
+  if (!values.title) {
+    errors.title = 'Title is required.';
+  } else if (values.title.length > 200) {
+    errors.title = 'Title must be 200 characters or fewer.';
+  }
+
+  if (!values.job_type_id) {
+    errors.job_type_id = 'Job type is required.';
+  } else if (!jobTypes.find(jt => String(jt.id) === values.job_type_id)) {
+    errors.job_type_id = 'Invalid job type.';
+  }
+
+  if (!values.last_date) {
+    errors.last_date = 'Last date is required.';
+  } else if (values.last_date < today) {
+    errors.last_date = 'Last date must be today or in the future.';
+  }
+
+  const selectedType = jobTypes.find(jt => String(jt.id) === values.job_type_id);
+  if (selectedType && (selectedType.slug === 'government' || selectedType.slug === 'psu')) {
+    if (!values.state_id) {
+      errors.state_id = `State is required for ${selectedType.name} jobs.`;
+    }
+  }
+
+  if (!values.apply_url && !values.apply_email) {
+    errors.apply_url = 'At least one of Apply URL or Apply Email is required.';
+  }
+  if (values.apply_url) {
+    try { new URL(values.apply_url); }
+    catch { errors.apply_url = 'Apply URL must be a valid URL (e.g. https://...).'; }
+  }
+  if (values.apply_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.apply_email)) {
+    errors.apply_email = 'Apply email must be a valid email address.';
+  }
+
+  let slug = values.slug || slugify(values.title);
+  if (!slug) {
+    errors.slug = 'Slug is required.';
+  } else if (!/^[a-z0-9-]+$/.test(slug)) {
+    errors.slug = 'Slug may only contain lowercase letters, numbers, and hyphens.';
+  }
+
+  if (Object.keys(errors).length === 0) {
+    // Only re-check uniqueness if slug changed
+    if (slug !== originalSlug) {
+      slug = await makeUniqueSlugExcluding(slug, jobId);
+    }
+
+    const nullOr = (v: string) => v === '' ? null : v;
+    const intOr = (v: string) => v === '' ? null : parseInt(v, 10);
+
+    await db.prepare(`
+      UPDATE jobs SET
+        slug = ?, title = ?, department_id = ?, job_type_id = ?, category_id = ?,
+        state_id = ?, location = ?, vacancies = ?, qualification = ?, age_limit = ?,
+        salary = ?, last_date = ?, apply_url = ?, apply_email = ?, description = ?,
+        is_published = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).bind(
+      slug,
+      values.title,
+      intOr(values.department_id),
+      intOr(values.job_type_id),
+      intOr(values.category_id),
+      intOr(values.state_id),
+      nullOr(values.location),
+      intOr(values.vacancies),
+      nullOr(values.qualification),
+      nullOr(values.age_limit),
+      nullOr(values.salary),
+      values.last_date,
+      nullOr(values.apply_url),
+      nullOr(values.apply_email),
+      nullOr(values.description),
+      parseInt(values.is_published, 10),
+      jobId,
+    ).run();
+
+    const kv = (env as any).KV as KVNamespace | undefined;
+    if (kv) await invalidateAllListingCaches(kv);
+
+    return Astro.redirect('/admin/jobs?updated=1');
+  }
+}
+
+const inputStyle = 'width:100%;padding:10px 12px;border:1px solid #ebebeb;border-radius:6px;font-size:14px;color:#171717;box-sizing:border-box;font-family:inherit;';
+const labelStyle = 'display:block;font-size:13px;font-weight:500;color:#4d4d4d;margin-bottom:5px;';
+const errStyle = 'display:block;color:#ee0000;font-size:12px;margin-top:4px;';
+const fieldWrap = 'margin-bottom:18px;';
+const sectionHead = 'font-size:15px;font-weight:600;color:#171717;margin:28px 0 16px;padding-bottom:8px;border-bottom:1px solid #ebebeb;';
+---
+<AdminLayout title="Edit Job — SarkariNaukriBoard">
+  <div style="max-width:720px;">
+    <h1 style="font-size:22px;font-weight:600;letter-spacing:-0.4px;color:#171717;margin:0 0 24px;">Edit Job</h1>
+
+    <form method="POST" autocomplete="off">
+
+      <!-- BASIC INFO -->
+      <p style={sectionHead}>Basic Info</p>
+
+      <div style={fieldWrap}>
+        <label style={labelStyle}>Title <span style="color:#ee0000;">*</span></label>
+        <input name="title" type="text" value={values.title} maxlength="200" style={inputStyle} />
+        {errors.title && <span style={errStyle}>{errors.title}</span>}
+      </div>
+
+      <div style={fieldWrap}>
+        <label style={labelStyle}>Department</label>
+        <select name="department_id" style={inputStyle}>
+          <option value="">— None —</option>
+          {departments.map(d => (
+            <option value={String(d.id)} selected={values.department_id === String(d.id)}>{d.name}</option>
+          ))}
+        </select>
+      </div>
+
+      <div style={fieldWrap}>
+        <label style={labelStyle}>Job Type <span style="color:#ee0000;">*</span></label>
+        <select name="job_type_id" id="job_type_id" style={inputStyle}>
+          <option value="">— Select type —</option>
+          {jobTypes.map(jt => (
+            <option value={String(jt.id)} selected={values.job_type_id === String(jt.id)}>{jt.name}</option>
+          ))}
+        </select>
+        {errors.job_type_id && <span style={errStyle}>{errors.job_type_id}</span>}
+      </div>
+
+      <div style={fieldWrap}>
+        <label style={labelStyle}>Category</label>
+        <select name="category_id" style={inputStyle}>
+          <option value="">— All categories —</option>
+          {categories.map(c => (
+            <option value={String(c.id)} selected={values.category_id === String(c.id)}>{c.name}</option>
+          ))}
+        </select>
+      </div>
+
+      <!-- LOCATION -->
+      <p style={sectionHead}>Location</p>
+
+      <div style={fieldWrap} id="state_field">
+        <label style={labelStyle} id="state_label">
+          State <span id="state_asterisk" style="color:#ee0000;display:none;">*</span>
+        </label>
+        <select name="state_id" id="state_id" style={inputStyle}>
+          <option value="">— All India —</option>
+          {allIndiaState && (
+            <option value={String(allIndiaState.id)} selected={values.state_id === String(allIndiaState.id)}>
+              All India (Central Govt)
+            </option>
+          )}
+          <optgroup label="States">
+            {statesOnly.map(s => (
+              <option value={String(s.id)} selected={values.state_id === String(s.id)}>{s.name}</option>
+            ))}
+          </optgroup>
+          <optgroup label="Union Territories">
+            {unionTerritories.map(s => (
+              <option value={String(s.id)} selected={values.state_id === String(s.id)}>{s.name}</option>
+            ))}
+          </optgroup>
+        </select>
+        {errors.state_id && <span style={errStyle} id="state_error">{errors.state_id}</span>}
+      </div>
+
+      <div style={fieldWrap}>
+        <label style={labelStyle}>City / District</label>
+        <input name="location" type="text" value={values.location} placeholder="e.g. Lucknow, Kanpur" style={inputStyle} />
+      </div>
+
+      <!-- JOB DETAILS -->
+      <p style={sectionHead}>Job Details</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div style={fieldWrap}>
+          <label style={labelStyle}>Vacancies</label>
+          <input name="vacancies" type="number" min="1" value={values.vacancies} style={inputStyle} />
+        </div>
+        <div style={fieldWrap}>
+          <label style={labelStyle}>Last Date <span style="color:#ee0000;">*</span></label>
+          <input name="last_date" type="date" value={values.last_date} min={today} style={inputStyle} />
+          {errors.last_date && <span style={errStyle}>{errors.last_date}</span>}
+        </div>
+      </div>
+
+      <div style={fieldWrap}>
+        <label style={labelStyle}>Qualification</label>
+        <input name="qualification" type="text" value={values.qualification} placeholder="e.g. B.Tech / Graduate" style={inputStyle} />
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div style={fieldWrap}>
+          <label style={labelStyle}>Age Limit</label>
+          <input name="age_limit" type="text" value={values.age_limit} placeholder="e.g. 18–30 years" style={inputStyle} />
+        </div>
+        <div style={fieldWrap}>
+          <label style={labelStyle}>Salary</label>
+          <input name="salary" type="text" value={values.salary} placeholder="e.g. ₹35,400 – ₹1,12,400" style={inputStyle} />
+        </div>
+      </div>
+
+      <!-- APPLY -->
+      <p style={sectionHead}>Apply</p>
+      <p style="font-size:13px;color:#888888;margin:-8px 0 16px;">Provide at least one of Apply URL or Apply Email.</p>
+
+      <div style={fieldWrap}>
+        <label style={labelStyle}>Apply URL</label>
+        <input name="apply_url" type="url" value={values.apply_url} placeholder="https://recruitment.example.gov.in" style={inputStyle} />
+        {errors.apply_url && <span style={errStyle}>{errors.apply_url}</span>}
+      </div>
+
+      <div style={fieldWrap}>
+        <label style={labelStyle}>Apply Email</label>
+        <input name="apply_email" type="email" value={values.apply_email} placeholder="jobs@dept.gov.in" style={inputStyle} />
+        {errors.apply_email && <span style={errStyle}>{errors.apply_email}</span>}
+      </div>
+
+      <!-- DESCRIPTION -->
+      <p style={sectionHead}>Description</p>
+
+      <div style={fieldWrap}>
+        <label style={labelStyle}>Description</label>
+        <textarea name="description" rows="8" style={`${inputStyle}resize:vertical;`}>{values.description}</textarea>
+      </div>
+
+      <!-- PUBLISHING -->
+      <p style={sectionHead}>Publishing</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div style={fieldWrap}>
+          <label style={labelStyle}>Slug</label>
+          <input name="slug" id="slug_field" type="text" value={values.slug}
+            data-original={originalSlug}
+            placeholder="auto-generated from title"
+            style={`${inputStyle}font-family:monospace;`} />
+          {errors.slug && <span style={errStyle}>{errors.slug}</span>}
+          <span id="slug_warning" style="display:none;color:#f5a623;font-size:12px;margin-top:4px;font-weight:500;">
+            ⚠ Changing the slug will break existing links.
+          </span>
+          <span style="display:block;font-size:12px;color:#888888;margin-top:4px;">Edit with care — changing the slug breaks existing URLs.</span>
+        </div>
+        <div style={fieldWrap}>
+          <label style={labelStyle}>Status</label>
+          <label style="display:flex;align-items:center;gap:8px;padding:10px 0;font-size:14px;color:#171717;cursor:pointer;">
+            <input name="is_published" type="checkbox" value="1" checked={values.is_published === '1'}
+              style="width:16px;height:16px;cursor:pointer;" />
+            Published (visible on public site)
+          </label>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:8px;padding-top:20px;border-top:1px solid #ebebeb;">
+        <button type="submit" style="padding:10px 24px;background:#171717;color:#fff;border:0;border-radius:6px;font-size:14px;font-weight:500;cursor:pointer;">
+          Save Changes
+        </button>
+        <a href="/admin/jobs" style="padding:10px 20px;color:#4d4d4d;font-size:14px;text-decoration:none;border:1px solid #ebebeb;border-radius:6px;">
+          Cancel
+        </a>
+      </div>
+
+    </form>
+  </div>
+</AdminLayout>
+
+<script is:inline>
+(function () {
+  const slugEl = document.getElementById('slug_field');
+  const typeEl = document.getElementById('job_type_id');
+  const asterisk = document.getElementById('state_asterisk');
+  const slugWarning = document.getElementById('slug_warning');
+
+  // Slug change warning
+  if (slugEl && slugWarning) {
+    var originalSlug = slugEl.getAttribute('data-original') || '';
+    slugEl.addEventListener('input', function () {
+      if (slugEl.value !== originalSlug) {
+        slugWarning.style.display = 'block';
+      } else {
+        slugWarning.style.display = 'none';
+      }
+    });
+  }
+
+  // Show/hide state asterisk based on job type
+  function updateStateRequired() {
+    if (!typeEl || !asterisk) return;
+    var selected = typeEl.options[typeEl.selectedIndex];
+    var optionText = selected ? selected.text.toLowerCase() : '';
+    var isGovtOrPsu = optionText.indexOf('government') !== -1 || optionText.indexOf('psu') !== -1;
+    asterisk.style.display = isGovtOrPsu ? 'inline' : 'none';
+  }
+
+  if (typeEl) {
+    typeEl.addEventListener('change', updateStateRequired);
+    updateStateRequired();
+  }
+})();
+</script>
