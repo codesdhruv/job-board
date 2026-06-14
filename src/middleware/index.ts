@@ -1,4 +1,5 @@
 import { defineMiddleware } from 'astro:middleware';
+import { env } from 'cloudflare:workers';
 import { verifySession } from '../lib/auth';
 
 export const onRequest = defineMiddleware(async (context, next) => {
@@ -10,7 +11,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const cookie = context.cookies.get('admin_session');
   if (!cookie) return context.redirect('/admin/login');
 
-  const secret = context.locals.runtime?.env?.ADMIN_SECRET;
+  const secret = (env as any).ADMIN_SECRET as string | undefined;
   if (!secret) throw new Error('ADMIN_SECRET is not configured');
 
   const payload = await verifySession(cookie.value, secret);
