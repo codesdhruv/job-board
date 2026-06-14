@@ -58,36 +58,46 @@ const siteUrl = (env as any).SITE_URL ?? '';
 const canonical = siteUrl ? `${siteUrl.replace(/\/$/, '')}/state/${stateRow.slug}` : undefined;
 ---
 <BaseLayout title={title} description={description} canonical={canonical}>
-  <nav aria-label="Breadcrumb" style="margin-bottom:16px;color:#4d4d4d;font-size:14px">
-    <a href="/" style="color:#0070f3;text-decoration:none">Home</a>
-    <span style="margin:0 8px;color:#888888">›</span>
-    <a href="/states" style="color:#0070f3;text-decoration:none">States</a>
-    <span style="margin:0 8px;color:#888888">›</span>
-    <span>{stateRow.name}</span>
-  </nav>
+  <main id="main-content" class="max-w-[1200px] mx-auto px-6 py-10">
+    <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-sm text-body mb-8">
+      <a href="/" class="text-link hover:underline">Home</a>
+      <span class="text-muted" aria-hidden="true">›</span>
+      <a href="/states" class="text-link hover:underline">States</a>
+      <span class="text-muted" aria-hidden="true">›</span>
+      <span class="text-ink">{stateRow.name}</span>
+    </nav>
 
-  <h1>Jobs in {stateRow.name}</h1>
-  <p style="color:#4d4d4d;margin-bottom:24px">{count} active vacancies in {stateRow.name}</p>
+    <div class="mb-6">
+      <h1 class="text-balance text-[32px] font-semibold leading-10 tracking-[-1.28px] text-ink mb-2">
+        Jobs in {stateRow.name}
+      </h1>
+      <p class="text-base text-body">{count} active {count === 1 ? 'vacancy' : 'vacancies'} in {stateRow.name}</p>
+    </div>
 
-  <nav aria-label="Filter by job type" style="display:flex;gap:24px;border-bottom:1px solid #ebebeb;margin-bottom:24px;padding-bottom:0">
-    {tabs.map((t) => (
-      <a
-        href={t.href}
-        aria-current={t.active ? 'page' : undefined}
-        style={`padding:12px 0;text-decoration:none;${
-          t.active
-            ? 'color:#171717;font-weight:600;border-bottom:2px solid #171717;margin-bottom:-1px'
-            : 'color:#4d4d4d;font-weight:400'
-        }`}
-      >
-        {t.label}
-      </a>
-    ))}
-  </nav>
+    <nav aria-label="Filter by job type" class="flex border-b border-hairline mb-8 overflow-x-auto">
+      {tabs.map((t) => (
+        <a
+          href={t.href}
+          aria-current={t.active ? 'page' : undefined}
+          class={`px-4 py-3 text-sm whitespace-nowrap no-underline transition-colors shrink-0 ${
+            t.active
+              ? 'text-ink font-semibold border-b-2 border-ink -mb-px'
+              : 'text-body hover:text-ink'
+          }`}
+        >
+          {t.label}
+        </a>
+      ))}
+    </nav>
 
-  {count === 0 ? (
-    <p>No active jobs in this state right now. Check back soon.</p>
-  ) : (
-    results.map((j: any) => <JobCard job={j} />)
-  )}
+    {count === 0 ? (
+      <div class="bg-canvas-soft rounded-md p-12 text-center">
+        <p class="text-body">No active jobs in {stateRow.name} right now. Check back soon.</p>
+      </div>
+    ) : (
+      <div class="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">
+        {results.map((j: any) => <JobCard job={j} />)}
+      </div>
+    )}
+  </main>
 </BaseLayout>

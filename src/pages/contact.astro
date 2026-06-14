@@ -10,23 +10,21 @@ const canonical = `${siteUrl}/contact`;
   description="Contact SarkariNaukriBoard. Reach out via email for questions, corrections or partnership."
   canonical={canonical}
 >
-  <main style="font-family:Geist,Inter,system-ui,-apple-system,sans-serif;color:#171717;background:#ffffff;">
-    <div style="max-width:720px;margin:0 auto;padding:64px 24px;">
-      <h1 style="font-size:40px;font-weight:600;line-height:48px;letter-spacing:-1.6px;margin:0 0 24px;">
-        Contact Us
-      </h1>
-      <p style="font-size:16px;line-height:28px;color:#4d4d4d;margin:0 0 32px;">
-        Have a question, found an incorrect listing, or want to discuss a partnership? Drop us an email and we'll get back to you as soon as possible.
-      </p>
-      <div style="padding:24px;background:#fafafa;border:1px solid #ebebeb;border-radius:8px;display:inline-block;">
-        <p style="font-size:14px;color:#888888;margin:0 0 4px;text-transform:uppercase;letter-spacing:0.05em;font-weight:500;">Email</p>
-        <a
-          href="mailto:contact@yourdomain.com"
-          style="font-size:18px;color:#0070f3;text-decoration:none;font-weight:500;"
-        >
-          contact@yourdomain.com
-        </a>
-      </div>
+  <main id="main-content" class="max-w-[720px] mx-auto px-6 py-16">
+    <h1 class="text-balance text-[40px] font-semibold leading-[48px] tracking-[-1.6px] text-ink mb-6">
+      Contact Us
+    </h1>
+    <p class="text-base leading-7 text-body mb-8">
+      Have a question, found an incorrect listing, or want to discuss a partnership? Drop us an email and we'll get back to you as soon as possible.
+    </p>
+    <div class="inline-block p-6 bg-canvas-soft border border-hairline rounded-md">
+      <p class="font-mono text-[11px] uppercase tracking-[0.06em] text-muted mb-1">Email</p>
+      <a
+        href="mailto:contact@yourdomain.com"
+        class="text-lg text-link font-medium hover:underline"
+      >
+        contact@yourdomain.com
+      </a>
     </div>
   </main>
 </BaseLayout>

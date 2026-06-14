@@ -37,45 +37,52 @@ const canonical = siteUrl ? `${siteUrl.replace(/\/$/, '')}/states` : undefined;
   description="Find government, PSU, and private sector jobs in your state. Browse all 36 states and union territories."
   canonical={canonical}
 >
-  <main style="max-width:960px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif;color:#171717;">
-    <h1 style="font-size:32px;font-weight:600;letter-spacing:-1px;margin:0 0 8px;">Browse Jobs by State</h1>
-    <p style="color:#4d4d4d;margin:0 0 24px;">Find government and private sector jobs in your state.</p>
+  <main id="main-content" class="max-w-[960px] mx-auto px-6 py-12">
+    <h1 class="text-balance text-[32px] font-semibold leading-10 tracking-[-1.28px] text-ink mb-2">
+      Browse Jobs by State
+    </h1>
+    <p class="text-base text-body mb-8">Find government and private sector jobs in your state.</p>
 
     {allIndia && (
       <a
         href={`/state/${allIndia.slug}`}
-        style="display:block;padding:16px;border:1px solid #ebebeb;border-radius:12px;background:#fafafa;color:#171717;text-decoration:none;margin-bottom:32px;"
+        class="flex items-center justify-between p-5 bg-canvas-soft border border-hairline rounded-lg text-ink no-underline hover:bg-canvas-soft-2 hover:border-hairline-strong transition-colors mb-10"
       >
-        <strong style="font-size:18px;">All India — Central Govt</strong>
-        <span style="color:#4d4d4d;margin-left:8px;">({allIndia.job_count})</span>
+        <div>
+          <span class="text-lg font-semibold">All India — Central Govt</span>
+          <span class="text-body text-sm ml-2">Central government jobs across India</span>
+        </div>
+        <span class="text-sm text-muted shrink-0">{allIndia.job_count} jobs →</span>
       </a>
     )}
 
-    <section style="margin-bottom:32px;">
-      <h2 style="font-size:20px;font-weight:600;margin:0 0 12px;">States</h2>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
+    <section class="mb-10">
+      <h2 class="text-[20px] font-semibold leading-7 tracking-[-0.6px] text-ink mb-4">States</h2>
+      <div class="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-2">
         {states.map((s) => (
           <a
             href={`/state/${s.slug}`}
             aria-label={s.job_count === 0 ? `${s.name} — 0 active jobs` : undefined}
-            style={`padding:10px 12px;border:1px solid #ebebeb;border-radius:8px;text-decoration:none;${s.job_count === 0 ? 'color:#888888;' : 'color:#171717;'}`}
+            class={`block px-3 py-2.5 border border-hairline rounded-md text-sm no-underline hover:bg-canvas-soft-2 hover:border-hairline-strong transition-colors ${s.job_count === 0 ? 'text-muted' : 'text-ink'}`}
           >
-            {s.name} ({s.job_count})
+            <span class="font-medium">{s.name}</span>
+            <span class="text-muted ml-1">({s.job_count})</span>
           </a>
         ))}
       </div>
     </section>
 
     <section>
-      <h2 style="font-size:20px;font-weight:600;margin:0 0 12px;">Union Territories</h2>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
+      <h2 class="text-[20px] font-semibold leading-7 tracking-[-0.6px] text-ink mb-4">Union Territories</h2>
+      <div class="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-2">
         {unionTerritories.map((s) => (
           <a
             href={`/state/${s.slug}`}
             aria-label={s.job_count === 0 ? `${s.name} — 0 active jobs` : undefined}
-            style={`padding:10px 12px;border:1px solid #ebebeb;border-radius:8px;text-decoration:none;${s.job_count === 0 ? 'color:#888888;' : 'color:#171717;'}`}
+            class={`block px-3 py-2.5 border border-hairline rounded-md text-sm no-underline hover:bg-canvas-soft-2 hover:border-hairline-strong transition-colors ${s.job_count === 0 ? 'text-muted' : 'text-ink'}`}
           >
-            {s.name} ({s.job_count})
+            <span class="font-medium">{s.name}</span>
+            <span class="text-muted ml-1">({s.job_count})</span>
           </a>
         ))}
       </div>

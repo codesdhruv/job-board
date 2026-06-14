@@ -76,6 +76,14 @@ function formatDate(dateStr: string) {
     day: 'numeric', month: 'short', year: 'numeric',
   });
 }
+
+const badgeClass: Record<string, string> = {
+  government: 'bg-blue-50 text-blue-700 border-blue-200',
+  psu:        'bg-orange-50 text-orange-700 border-orange-200',
+  private:    'bg-green-50 text-green-700 border-green-200',
+  freelance:  'bg-purple-50 text-purple-700 border-purple-200',
+};
+
 const metaDescription = job
   ? [
       `Apply for ${job.title}${job.dept_name ? ' at ' + job.dept_name : ''}.`,
@@ -94,118 +102,199 @@ const pageTitle = job
       <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
     </Fragment>
   )}
+
   {!job ? (
-    <main>
-      <h1>Job not found</h1>
-      <p>The job you are looking for does not exist or is no longer published.</p>
-      <p><a href="/jobs">← Back to all jobs</a></p>
+    <main id="main-content" class="max-w-[720px] mx-auto px-6 py-16 text-center">
+      <h1 class="text-[32px] font-semibold text-ink mb-4">Job Not Found</h1>
+      <p class="text-body mb-6">The job you are looking for does not exist or is no longer published.</p>
+      <a href="/jobs" class="inline-flex items-center h-10 px-5 bg-ink text-on-primary text-sm font-medium rounded-pill no-underline hover:bg-[#2e2e2e] transition-colors">
+        ← Browse All Jobs
+      </a>
     </main>
   ) : (
-    <main>
-      <nav aria-label="Breadcrumb">
-        <a href="/">Home</a> ›{' '}
-        <a href="/jobs">Jobs</a>
+    <main id="main-content" class="max-w-[1200px] mx-auto px-6 py-10">
+
+      <!-- Breadcrumb -->
+      <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-sm text-body mb-8 flex-wrap">
+        <a href="/" class="text-link hover:underline">Home</a>
+        <span class="text-muted" aria-hidden="true">›</span>
+        <a href="/jobs" class="text-link hover:underline">Jobs</a>
         {job.category_name && (
           <>
-            {' '}›{' '}
-            <a href={`/category/${job.category_slug}`}>{job.category_name}</a>
+            <span class="text-muted" aria-hidden="true">›</span>
+            <a href={`/category/${job.category_slug}`} class="text-link hover:underline">{job.category_name}</a>
           </>
         )}
-        {' '}› <span>{job.title}</span>
+        <span class="text-muted" aria-hidden="true">›</span>
+        <span class="text-ink truncate max-w-[200px]">{job.title}</span>
       </nav>
 
-      <header>
-        {job.dept_name && <p>{job.dept_name}</p>}
-        <h1>{job.title}</h1>
-        <p>
-          {job.type_name && <span>[{job.type_name}]</span>}
-          {job.state_name && <span> · {job.state_name}</span>}
-          {' '}· <span>Posted {job.created_at?.slice(0, 10)}</span>
-        </p>
-      </header>
+      <!-- Two-column layout: main content + sidebar -->
+      <div class="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
 
-      <section aria-label="Job details">
-        <dl>
-          {job.vacancies != null && (
-            <>
-              <dt>Vacancies</dt>
-              <dd>{job.vacancies}</dd>
-            </>
+        <!-- Left: job detail -->
+        <div>
+          {job.dept_name && (
+            <p class="font-mono text-[11px] uppercase tracking-[0.06em] text-muted mb-2">
+              {job.dept_name}
+            </p>
           )}
-          <dt>Last date</dt>
-          <dd>
-            {isUrgent ? (
-              <span style="color:#ee0000">{job.last_date}</span>
-            ) : (
-              <span>{job.last_date}</span>
+
+          <h1 class="text-balance text-[32px] font-semibold leading-10 tracking-[-1.28px] text-ink mb-4">
+            {job.title}
+          </h1>
+
+          <!-- Meta row -->
+          <div class="flex flex-wrap items-center gap-3 text-sm text-body mb-8">
+            {job.type_name && (
+              <span class={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${badgeClass[job.type_slug] ?? 'bg-canvas-soft text-body border-hairline'}`}>
+                {job.type_name}
+              </span>
             )}
-          </dd>
-          {job.salary && (
-            <>
-              <dt>Salary</dt>
-              <dd>{job.salary}</dd>
-            </>
-          )}
-          {job.qualification && (
-            <>
-              <dt>Qualification</dt>
-              <dd>{job.qualification}</dd>
-            </>
-          )}
-          {job.age_limit && (
-            <>
-              <dt>Age limit</dt>
-              <dd>{job.age_limit}</dd>
-            </>
-          )}
-          {job.category_name && (
-            <>
-              <dt>Category</dt>
-              <dd>{job.category_name}</dd>
-            </>
-          )}
-          {job.location && (
-            <>
-              <dt>Location</dt>
-              <dd>{job.location}</dd>
-            </>
-          )}
-        </dl>
-      </section>
+            {job.state_name && <span>{job.state_name}</span>}
+            {job.state_name && job.created_at && <span class="text-muted">·</span>}
+            {job.created_at && (
+              <span class="text-muted">Posted {job.created_at.slice(0, 10)}</span>
+            )}
+          </div>
 
-      {job.description && (
-        <section aria-label="Description">
-          <h2>Description</h2>
-          <div set:html={job.description} />
-        </section>
-      )}
+          <!-- Job details table -->
+          <section aria-label="Job details" class="mb-8">
+            <h2 class="text-[18px] font-semibold tracking-[-0.4px] text-ink mb-4">Job Details</h2>
+            <dl class="grid grid-cols-[auto_1fr] gap-x-8 gap-y-3 text-sm">
+              {job.vacancies != null && (
+                <>
+                  <dt class="text-muted font-medium whitespace-nowrap">Vacancies</dt>
+                  <dd class="text-ink m-0">{job.vacancies}</dd>
+                </>
+              )}
+              <dt class="text-muted font-medium whitespace-nowrap">Last Date</dt>
+              <dd class={`m-0 font-medium ${isUrgent ? 'text-error' : 'text-ink'}`}>
+                {isUrgent && <span aria-label="Urgent">⚠ </span>}
+                {formatDate(job.last_date)}
+                {isUrgent && <span class="ml-1 font-normal text-muted">({daysLeft} {daysLeft === 1 ? 'day' : 'days'} left)</span>}
+              </dd>
+              {job.salary && (
+                <>
+                  <dt class="text-muted font-medium whitespace-nowrap">Salary</dt>
+                  <dd class="text-ink m-0">{job.salary}</dd>
+                </>
+              )}
+              {job.qualification && (
+                <>
+                  <dt class="text-muted font-medium whitespace-nowrap">Qualification</dt>
+                  <dd class="text-ink m-0">{job.qualification}</dd>
+                </>
+              )}
+              {job.age_limit && (
+                <>
+                  <dt class="text-muted font-medium whitespace-nowrap">Age Limit</dt>
+                  <dd class="text-ink m-0">{job.age_limit}</dd>
+                </>
+              )}
+              {job.category_name && (
+                <>
+                  <dt class="text-muted font-medium whitespace-nowrap">Category</dt>
+                  <dd class="m-0">
+                    <a href={`/category/${job.category_slug}`} class="text-link hover:underline">
+                      {job.category_name}
+                    </a>
+                  </dd>
+                </>
+              )}
+              {job.location && (
+                <>
+                  <dt class="text-muted font-medium whitespace-nowrap">Location</dt>
+                  <dd class="text-ink m-0">{job.location}</dd>
+                </>
+              )}
+            </dl>
+          </section>
 
-      <section aria-label="Apply">
-        {isExpired ? (
-          <p role="status" style="color:#ee0000"><strong>Applications closed.</strong> The last date for this job has passed.</p>
-        ) : applyMode === 'url' ? (
-          <p><a href={job.apply_url} target="_blank" rel="noopener">Apply Now →</a></p>
-        ) : applyMode === 'email' ? (
-          <p><a href={`mailto:${job.apply_email}`}>Apply via Email</a></p>
-        ) : (
-          <p>Check official website for application details.</p>
-        )}
-      </section>
+          <!-- Description -->
+          {job.description && (
+            <section aria-label="Job description" class="border-t border-hairline pt-8">
+              <h2 class="text-[18px] font-semibold tracking-[-0.4px] text-ink mb-4">Description</h2>
+              <div class="text-body leading-7 text-sm [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1" set:html={job.description} />
+            </section>
+          )}
 
-      {similar.length > 0 && (
-        <aside aria-label="Similar jobs">
-          <h2>Similar jobs</h2>
-          <ul>
-            {similar.map((s) => (
-              <li>
-                <a href={`/jobs/${s.slug}`}>{s.title}</a>
-                {s.dept_name && <span> — {s.dept_name}</span>}
-                <span> (last date: {s.last_date})</span>
-              </li>
-            ))}
-          </ul>
+          <!-- Similar jobs -->
+          {similar.length > 0 && (
+            <aside aria-label="Similar jobs" class="border-t border-hairline pt-8 mt-8">
+              <h2 class="text-[18px] font-semibold tracking-[-0.4px] text-ink mb-4">Similar Jobs</h2>
+              <ul class="flex flex-col gap-0 list-none m-0 p-0">
+                {similar.map((s) => (
+                  <li class="flex items-start justify-between gap-4 py-3 border-b border-hairline last:border-b-0">
+                    <div class="flex-1 min-w-0">
+                      <a href={`/jobs/${s.slug}`} class="text-sm font-medium text-ink hover:text-link transition-colors no-underline line-clamp-2">
+                        {s.title}
+                      </a>
+                      {s.dept_name && (
+                        <p class="text-xs text-muted mt-0.5 truncate">{s.dept_name}</p>
+                      )}
+                    </div>
+                    <span class="text-xs text-muted whitespace-nowrap shrink-0">{s.last_date}</span>
+                  </li>
+                ))}
+              </ul>
+            </aside>
+          )}
+        </div>
+
+        <!-- Right: Apply sidebar -->
+        <aside class="bg-canvas rounded-lg shadow-float p-6 lg:sticky lg:top-20">
+          <h2 class="text-base font-semibold text-ink mb-4">Apply for This Job</h2>
+
+          {isExpired ? (
+            <div class="p-4 bg-canvas-soft rounded-md border border-hairline mb-4">
+              <p role="status" class="text-sm text-error font-medium m-0">Applications Closed</p>
+              <p class="text-xs text-muted mt-1 m-0">The last date for this job has passed.</p>
+            </div>
+          ) : applyMode === 'url' ? (
+            <a
+              href={job.apply_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex items-center justify-center w-full h-12 bg-ink text-on-primary text-sm font-medium rounded-pill no-underline hover:bg-[#2e2e2e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 transition-colors mb-4"
+            >
+              Apply Now →
+            </a>
+          ) : applyMode === 'email' ? (
+            <a
+              href={`mailto:${job.apply_email}`}
+              class="flex items-center justify-center w-full h-12 bg-ink text-on-primary text-sm font-medium rounded-pill no-underline hover:bg-[#2e2e2e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 transition-colors mb-4"
+            >
+              Apply via Email →
+            </a>
+          ) : (
+            <p class="text-sm text-body mb-4">Check the official website for application details.</p>
+          )}
+
+          <!-- Quick stats in sidebar -->
+          <div class="flex flex-col gap-3 pt-4 border-t border-hairline">
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-muted">Closes</span>
+              <span class={`font-medium ${isUrgent ? 'text-error' : 'text-ink'}`}>
+                {formatDate(job.last_date)}
+              </span>
+            </div>
+            {job.vacancies != null && (
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-muted">Vacancies</span>
+                <span class="font-medium text-ink">{job.vacancies}</span>
+              </div>
+            )}
+            {job.salary && (
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-muted">Salary</span>
+                <span class="font-medium text-ink text-right max-w-[160px] truncate">{job.salary}</span>
+              </div>
+            )}
+          </div>
         </aside>
-      )}
+
+      </div>
     </main>
   )}
 </BaseLayout>

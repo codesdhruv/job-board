@@ -153,110 +153,115 @@ const listingDescription = 'Browse government, PSU and private jobs in India. Fi
   description={listingDescription}
   canonical={listingCanonical}
 >
-  <h1>Jobs</h1>
+  <main id="main-content" class="max-w-[1200px] mx-auto px-6 py-10">
 
-  <form method="get" action="/jobs" role="search" style="margin-bottom:24px">
-    {preservedForSearch.map((p) => <input type="hidden" name={p.key} value={p.value} />)}
-    <input
-      type="search"
-      name="q"
-      value={qTrimmed}
-      minlength="2"
-      placeholder="Search jobs by title, department…"
-      aria-label="Search jobs"
-      style="padding:8px;border:1px solid #ebebeb;border-radius:6px;min-width:320px"
-    />
-    <button type="submit" style="padding:8px 16px;border:1px solid #171717;background:#171717;color:#fff;border-radius:6px;font-weight:500">Search</button>
-  </form>
+    <!-- Page header -->
+    <div class="mb-8">
+      <h1 class="text-balance text-[32px] font-semibold leading-10 tracking-[-1.28px] text-ink mb-2">
+        Browse Jobs
+      </h1>
+      <p class="text-base text-body">Government, PSU, private and freelance jobs across India. Updated daily.</p>
+    </div>
 
-  {promoteState && (
-    <form method="get" action="/jobs" style="margin-bottom:24px">
-      {preservedParams.map((p) => <input type="hidden" name={p.key} value={p.value} />)}
-      <label for="state-select" style="display:block;font-weight:600;color:#171717;margin-bottom:8px">
-        Select your state
-      </label>
-      <select id="state-select" name="state" onchange="this.form.submit()" style="padding:8px;border:1px solid #ebebeb;border-radius:6px;min-width:240px">
-        <option value="" selected={!activeState}>All India</option>
-        <optgroup label="States">
-          {states.map((s) => (
-            <option value={s.slug} selected={activeState === s.slug}>{s.name}</option>
-          ))}
-        </optgroup>
-        <optgroup label="Union Territories">
-          {uts.map((s) => (
-            <option value={s.slug} selected={activeState === s.slug}>{s.name}</option>
-          ))}
-        </optgroup>
-      </select>
+    <!-- Search -->
+    <form method="get" action="/jobs" role="search" class="flex gap-2 mb-6 flex-wrap">
+      {preservedForSearch.map((p) => <input type="hidden" name={p.key} value={p.value} />)}
+      <input
+        type="search"
+        name="q"
+        value={qTrimmed}
+        minlength="2"
+        placeholder="Search jobs by title, department…"
+        aria-label="Search jobs"
+        autocomplete="off"
+        class="flex-[1_1_280px] h-10 px-3 font-sans text-sm text-ink bg-canvas border border-hairline rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:border-transparent transition-shadow"
+      />
+      <button
+        type="submit"
+        class="h-10 px-5 font-sans text-sm font-medium text-on-primary bg-ink border-none rounded-sm cursor-pointer hover:bg-[#2e2e2e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 transition-colors"
+      >
+        Search
+      </button>
     </form>
-  )}
 
-  {promoteState && (
-    <form method="get" action="/jobs" style="margin-bottom:24px">
-      {preservedForCategory.map((p) => <input type="hidden" name={p.key} value={p.value} />)}
-      <select name="category" aria-label="Filter by category" onchange="this.form.submit()" style="padding:8px;border:1px solid #ebebeb;border-radius:6px;min-width:240px">
-        <option value="" selected={!activeCategory}>All categories</option>
-        {categories.map((c) => (
-          <option value={c.slug} selected={activeCategory === c.slug}>{c.name}</option>
-        ))}
-      </select>
-    </form>
-  )}
-
-  <nav aria-label="Filter by job type" style="display:flex;gap:24px;border-bottom:1px solid #ebebeb;margin-bottom:24px;padding-bottom:0">
-    {tabs.map((t) => {
-      const isActive = activeType === t.slug;
-      const count = counts.get(t.slug) ?? 0;
-      return (
-        <a
-          href={hrefFor(t.slug)}
-          aria-current={isActive ? 'page' : undefined}
-          style={`padding:12px 0;text-decoration:none;${
-            isActive
-              ? 'color:#171717;font-weight:600;border-bottom:2px solid #171717;margin-bottom:-1px'
-              : 'color:#4d4d4d;font-weight:400'
-          }`}
+    <!-- Filters row -->
+    <div class="flex flex-wrap gap-3 mb-6">
+      {/* State filter — promoted for govt/psu, otherwise compact */}
+      <form method="get" action="/jobs">
+        {preservedParams.map((p) => <input type="hidden" name={p.key} value={p.value} />)}
+        {promoteState && (
+          <label for="state-select" class="block text-sm font-medium text-ink mb-1">State</label>
+        )}
+        <select
+          id="state-select"
+          name="state"
+          aria-label="Filter by state"
+          onchange="this.form.submit()"
+          class="h-10 px-3 border border-hairline rounded-sm bg-canvas text-ink text-sm outline-none focus-visible:ring-2 focus-visible:ring-ink cursor-pointer"
         >
-          {t.label} ({count})
-        </a>
-      );
-    })}
-  </nav>
+          <option value="" selected={!activeState}>All India</option>
+          <optgroup label="States">
+            {states.map((s) => (
+              <option value={s.slug} selected={activeState === s.slug}>{s.name}</option>
+            ))}
+          </optgroup>
+          <optgroup label="Union Territories">
+            {uts.map((s) => (
+              <option value={s.slug} selected={activeState === s.slug}>{s.name}</option>
+            ))}
+          </optgroup>
+        </select>
+      </form>
 
-  {!promoteState && (
-    <form method="get" action="/jobs" style="margin-bottom:24px">
-      {preservedParams.map((p) => <input type="hidden" name={p.key} value={p.value} />)}
-      <select name="state" aria-label="Filter by state" onchange="this.form.submit()" style="padding:8px;border:1px solid #ebebeb;border-radius:6px;min-width:240px">
-        <option value="" selected={!activeState}>All India</option>
-        <optgroup label="States">
-          {states.map((s) => (
-            <option value={s.slug} selected={activeState === s.slug}>{s.name}</option>
+      {/* Category filter */}
+      <form method="get" action="/jobs">
+        {preservedForCategory.map((p) => <input type="hidden" name={p.key} value={p.value} />)}
+        <select
+          name="category"
+          aria-label="Filter by category"
+          onchange="this.form.submit()"
+          class="h-10 px-3 border border-hairline rounded-sm bg-canvas text-ink text-sm outline-none focus-visible:ring-2 focus-visible:ring-ink cursor-pointer"
+        >
+          <option value="" selected={!activeCategory}>All categories</option>
+          {categories.map((c) => (
+            <option value={c.slug} selected={activeCategory === c.slug}>{c.name}</option>
           ))}
-        </optgroup>
-        <optgroup label="Union Territories">
-          {uts.map((s) => (
-            <option value={s.slug} selected={activeState === s.slug}>{s.name}</option>
-          ))}
-        </optgroup>
-      </select>
-    </form>
-  )}
+        </select>
+      </form>
+    </div>
 
-  {!promoteState && (
-    <form method="get" action="/jobs" style="margin-bottom:24px">
-      {preservedForCategory.map((p) => <input type="hidden" name={p.key} value={p.value} />)}
-      <select name="category" aria-label="Filter by category" onchange="this.form.submit()" style="padding:8px;border:1px solid #ebebeb;border-radius:6px;min-width:240px">
-        <option value="" selected={!activeCategory}>All categories</option>
-        {categories.map((c) => (
-          <option value={c.slug} selected={activeCategory === c.slug}>{c.name}</option>
-        ))}
-      </select>
-    </form>
-  )}
+    <!-- Job type tabs -->
+    <nav aria-label="Filter by job type" class="flex border-b border-hairline mb-8 overflow-x-auto">
+      {tabs.map((t) => {
+        const isActive = activeType === t.slug;
+        const count = counts.get(t.slug) ?? 0;
+        return (
+          <a
+            href={hrefFor(t.slug)}
+            aria-current={isActive ? 'page' : undefined}
+            class={`px-4 py-3 text-sm whitespace-nowrap no-underline transition-colors shrink-0 ${
+              isActive
+                ? 'text-ink font-semibold border-b-2 border-ink -mb-px'
+                : 'text-body hover:text-ink'
+            }`}
+          >
+            {t.label} <span class="text-muted">({count})</span>
+          </a>
+        );
+      })}
+    </nav>
 
-  {results.length === 0 ? (
-    <p>No jobs found.</p>
-  ) : (
-    results.map((j: any) => <JobCard job={j} />)
-  )}
+    <!-- Results -->
+    {results.length === 0 ? (
+      <div class="bg-canvas-soft rounded-md p-12 text-center">
+        <p class="text-body mb-4">No jobs found matching your filters.</p>
+        <a href="/jobs" class="text-sm text-link hover:underline">Clear all filters</a>
+      </div>
+    ) : (
+      <div class="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">
+        {results.map((j: any) => <JobCard job={j} />)}
+      </div>
+    )}
+
+  </main>
 </BaseLayout>

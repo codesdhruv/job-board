@@ -58,3 +58,19 @@ html.dark {
     0 2px 4px rgba(0, 0, 0, 0.07),
     0 4px 8px rgba(0, 0, 0, 0.07);
 }
+
+/* Level 4 float-stack — pricing cards, apply sidebar */
+@utility shadow-float {
+  box-shadow:
+    0 0 0 1px var(--color-hairline) inset,
+    0 2px 2px rgba(0, 0, 0, 0.04),
+    0 8px 16px -4px rgba(0, 0, 0, 0.06);
+}
+
+/* Honour reduced-motion for all transitions */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
