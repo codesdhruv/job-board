@@ -1,0 +1,102 @@
+---
+import { env } from 'cloudflare:workers';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import JobCard from '../../components/JobCard.astro';
+import { getDb } from '../../lib/db';
+
+const db = getDb();
+const { slug } = Astro.params;
+
+const categoryRow = await db
+  .prepare(`SELECT id, name, slug FROM categories WHERE slug = ?`)
+  .bind(slug)
+  .first<{ id: number; name: string; slug: string }>();
+
+if (!categoryRow) {
+  return new Response(null, { status: 404 });
+}
+
+const validTypes = ['government', 'psu', 'private', 'freelance'];
+const typeParam = Astro.url.searchParams.get('type');
+const activeType = typeParam && validTypes.includes(typeParam) ? typeParam : null;
+
+const sql = `SELECT j.*, jt.name AS type_name, jt.slug AS type_slug,
+        c.name AS category_name, s.name AS state_name,
+        s.slug AS state_slug, d.name AS dept_name, d.logo_r2_key
+ FROM jobs j
+ LEFT JOIN job_types jt ON j.job_type_id = jt.id
+ LEFT JOIN categories c ON j.category_id = c.id
+ LEFT JOIN states s ON j.state_id = s.id
+ LEFT JOIN departments d ON j.department_id = d.id
+ WHERE j.is_published = 1
+   AND j.last_date >= DATE('now')
+   AND c.slug = ?
+   ${activeType ? "AND jt.slug = ?" : ''}
+ ORDER BY j.created_at DESC`;
+
+const stmt = activeType
+  ? db.prepare(sql).bind(categoryRow.slug, activeType)
+  : db.prepare(sql).bind(categoryRow.slug);
+const { results } = await stmt.all();
+
+const count = results.length;
+
+function hrefFor(typeSlug: string | null) {
+  const p = new URLSearchParams(Astro.url.searchParams);
+  p.delete('page');
+  if (typeSlug) p.set('type', typeSlug);
+  else p.delete('type');
+  const qs = p.toString();
+  return qs ? `/category/${categoryRow.slug}?${qs}` : `/category/${categoryRow.slug}`;
+}
+
+const tabs = [
+  { label: 'All', slug: null },
+  { label: 'Government', slug: 'government' },
+  { label: 'PSU / Semi-Govt', slug: 'psu' },
+  { label: 'Private', slug: 'private' },
+  { label: 'Freelance / Gig', slug: 'freelance' },
+];
+
+const title = `${categoryRow.name} Jobs 2026 — Government, PSU & Private | SarkariNaukriBoard`;
+const description = `Find latest ${categoryRow.name} jobs in India. ${count} active vacancies in government, PSU and private sector.`;
+const siteUrl = (env as any).SITE_URL ?? '';
+const canonical = siteUrl ? `${siteUrl.replace(/\/$/, '')}/category/${categoryRow.slug}` : undefined;
+---
+<BaseLayout title={title} description={description} canonical={canonical}>
+  <nav aria-label="Breadcrumb" style="margin-bottom:16px;color:#4d4d4d;font-size:14px">
+    <a href="/" style="color:#0070f3;text-decoration:none">Home</a>
+    <span style="margin:0 8px;color:#888888">›</span>
+    <span>Categories</span>
+    <span style="margin:0 8px;color:#888888">›</span>
+    <span>{categoryRow.name}</span>
+  </nav>
+
+  <h1>{categoryRow.name} Jobs</h1>
+  <p style="color:#4d4d4d;margin-bottom:24px">{count} active {categoryRow.name.toLowerCase()} jobs across all sectors</p>
+
+  <nav aria-label="Filter by job type" style="display:flex;gap:24px;border-bottom:1px solid #ebebeb;margin-bottom:24px;padding-bottom:0">
+    {tabs.map((t) => {
+      const isActive = t.slug === activeType;
+      return (
+        <a
+          href={hrefFor(t.slug)}
+          aria-current={isActive ? 'page' : undefined}
+          style={`padding:12px 0;text-decoration:none;${
+            isActive
+              ? 'color:#171717;font-weight:600;border-bottom:2px solid #171717;margin-bottom:-1px'
+              : 'color:#4d4d4d;font-weight:400'
+          }`}
+        >
+          {t.label}
+        </a>
+      );
+    })}
+  </nav>
+
+  {count === 0 ? (
+    <p>No active jobs in this category right now. Check back soon.</p>
+  ) : (
+    results.map((j: any) => <JobCard job={j} />)
+  )}
+</BaseLayout>
