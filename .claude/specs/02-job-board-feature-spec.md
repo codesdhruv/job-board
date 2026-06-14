@@ -843,7 +843,7 @@ Password-protected entry to the admin panel. Single admin account — no registr
 
 ### Flow
 1. Admin submits form (POST `/admin/login`)
-2. Server checks username + bcrypt-verify password against `admins` table
+2. Server checks username + PBKDF2-SHA256-verify password against `admins` table
 3. On success: set `httpOnly; Secure; SameSite=Strict` cookie with signed session token → redirect to `/admin/dashboard`
 4. On failure: re-render login page with error message
 
@@ -856,7 +856,7 @@ Password-protected entry to the admin panel. Single admin account — no registr
 ### Security
 - Rate limiting: max 5 failed attempts per IP per 15 minutes (use KV to track attempts)
 - Do not reveal whether username or password was wrong — always show generic "Invalid username or password"
-- Password stored as bcrypt hash (cost factor 12)
+- Password stored as PBKDF2-SHA256 hash (100,000 iterations, 16-byte salt, 32-byte derived key) in the format `pbkdf2$iters$salt_b64$hash_b64` — implemented via Web Crypto in `src/lib/auth.ts` (no npm dependency; Workers runtime compatible)
 
 ### Edge cases
 - Already logged in (valid cookie) → redirect to `/admin/dashboard`, skip login page
