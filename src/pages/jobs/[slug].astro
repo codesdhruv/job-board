@@ -2,6 +2,7 @@
 import { env } from 'cloudflare:workers';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getDb } from '../../lib/db';
+import { buildJobPostingSchema } from '../../lib/seo';
 
 const { slug } = Astro.params;
 const db = getDb();
@@ -62,6 +63,14 @@ if (job && job.category_id != null) {
 const siteUrl = (env as any).SITE_URL ?? '';
 const canonical = job ? `${siteUrl}/jobs/${job.slug}` : undefined;
 
+const jsonLd = job
+  ? buildJobPostingSchema(
+      job,
+      job.dept_name ? { id: job.department_id, name: job.dept_name, logo_r2_key: job.logo_r2_key } : null,
+      job.state_name ? { id: job.state_id, name: job.state_name, slug: job.state_slug, is_union_territory: 0 } : null,
+    )
+  : null;
+
 const stripped = job?.description
   ? job.description.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()
   : '';
@@ -73,6 +82,11 @@ const metaDescription = job
 const pageTitle = job ? `${job.title} — SarkariNaukriBoard` : 'Not found — SarkariNaukriBoard';
 ---
 <BaseLayout title={pageTitle} description={metaDescription} canonical={canonical}>
+  {jsonLd && (
+    <Fragment slot="head">
+      <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    </Fragment>
+  )}
   {!job ? (
     <main>
       <h1>Job not found</h1>
