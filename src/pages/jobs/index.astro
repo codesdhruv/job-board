@@ -3,8 +3,11 @@ import { env } from 'cloudflare:workers';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import JobCard from '../../components/JobCard.astro';
 import { getDb } from '../../lib/db';
+import { getListingCached } from '../../lib/kv';
 
 const db = getDb();
+const kv = (env as any).KV as KVNamespace;
+const page = parseInt(Astro.url.searchParams.get('page') ?? '1', 10);
 
 const tabs = [
   { slug: null, label: 'All' },
@@ -73,17 +76,42 @@ const jobsSql = `SELECT j.*, jt.name AS type_name, jt.slug AS type_slug,
 const jobsStmt = binds.length
   ? db.prepare(jobsSql).bind(...binds)
   : db.prepare(jobsSql);
-const { results } = await jobsStmt.all();
 
-const { results: countRows } = await db
-  .prepare(
-    `SELECT jt.slug AS slug, COUNT(*) AS count
-     FROM jobs j
-     JOIN job_types jt ON j.job_type_id = jt.id
-     WHERE j.is_published = 1 AND j.last_date >= DATE('now')
-     GROUP BY jt.slug`
-  )
-  .all();
+function buildListingKey(): string {
+  const parts = ['jobs'];
+  if (activeState)    { parts.push('state',    activeState); }
+  if (activeType)     { parts.push('type',      activeType); }
+  if (activeCategory) { parts.push('category',  activeCategory); }
+  if (!activeState && !activeType && !activeCategory) parts.push('all');
+  parts.push(`p${page}`);
+  return parts.join(':');
+}
+
+let results: any[];
+if (activeQuery) {
+  ({ results } = await jobsStmt.all());
+} else {
+  results = await getListingCached(kv, buildListingKey(), () =>
+    jobsStmt.all().then((r) => r.results as any[])
+  );
+}
+
+const countRows = await getListingCached<{ slug: string; count: number }[]>(
+  kv,
+  'counts:all',
+  () =>
+    db
+      .prepare(
+        `SELECT jt.slug AS slug, COUNT(*) AS count
+         FROM jobs j
+         JOIN job_types jt ON j.job_type_id = jt.id
+         WHERE j.is_published = 1 AND j.last_date >= DATE('now')
+         GROUP BY jt.slug`
+      )
+      .all()
+      .then((r) => r.results as { slug: string; count: number }[]),
+  600,
+);
 
 const counts = new Map<string | null, number>();
 let total = 0;

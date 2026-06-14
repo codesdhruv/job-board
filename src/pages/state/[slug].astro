@@ -3,8 +3,11 @@ import { env } from 'cloudflare:workers';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import JobCard from '../../components/JobCard.astro';
 import { getDb } from '../../lib/db';
+import { getListingCached } from '../../lib/kv';
 
 const db = getDb();
+const kv = (env as any).KV as KVNamespace;
+const page = parseInt(Astro.url.searchParams.get('page') ?? '1', 10);
 const { slug } = Astro.params;
 
 const stateRow = await db
@@ -16,23 +19,29 @@ if (!stateRow) {
   return new Response(null, { status: 404 });
 }
 
-const { results } = await db
-  .prepare(
-    `SELECT j.*, jt.name AS type_name, jt.slug AS type_slug,
-            c.name AS category_name, s.name AS state_name,
-            s.slug AS state_slug, d.name AS dept_name, d.logo_r2_key
-     FROM jobs j
-     LEFT JOIN job_types jt ON j.job_type_id = jt.id
-     LEFT JOIN categories c ON j.category_id = c.id
-     LEFT JOIN states s ON j.state_id = s.id
-     LEFT JOIN departments d ON j.department_id = d.id
-     WHERE j.is_published = 1
-       AND j.last_date >= DATE('now')
-       AND s.slug = ?
-     ORDER BY j.created_at DESC`
-  )
-  .bind(stateRow.slug)
-  .all();
+const results = await getListingCached<any[]>(
+  kv,
+  `jobs:state:${stateRow.slug}:p${page}`,
+  () =>
+    db
+      .prepare(
+        `SELECT j.*, jt.name AS type_name, jt.slug AS type_slug,
+                c.name AS category_name, s.name AS state_name,
+                s.slug AS state_slug, d.name AS dept_name, d.logo_r2_key
+         FROM jobs j
+         LEFT JOIN job_types jt ON j.job_type_id = jt.id
+         LEFT JOIN categories c ON j.category_id = c.id
+         LEFT JOIN states s ON j.state_id = s.id
+         LEFT JOIN departments d ON j.department_id = d.id
+         WHERE j.is_published = 1
+           AND j.last_date >= DATE('now')
+           AND s.slug = ?
+         ORDER BY j.created_at DESC`
+      )
+      .bind(stateRow.slug)
+      .all()
+      .then((r) => r.results as any[]),
+);
 
 const count = results.length;
 
