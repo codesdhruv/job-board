@@ -54,8 +54,8 @@ const metrics = [
   { label: 'Expired',            value: expiredCount,  accent: '#ee0000' },
 ];
 
-const thStyle = 'text-align:left;padding:10px 16px;font-size:11px;font-weight:500;color:#888888;text-transform:uppercase;letter-spacing:0.06em;font-family:"Geist Mono",ui-monospace,monospace;background:#fafafa;border-bottom:1px solid #ebebeb;';
-const tdStyle = 'padding:12px 16px;font-size:14px;color:#171717;border-bottom:1px solid #ebebeb;';
+const thStyle = 'text-align:left;padding:10px 16px;font-size:11px;font-weight:500;color:var(--c-muted);text-transform:uppercase;letter-spacing:0.06em;font-family:"Geist Mono",ui-monospace,monospace;background:var(--c-canvas-soft-2);border-bottom:1px solid var(--c-hairline);';
+const tdStyle = 'padding:12px 16px;font-size:14px;color:var(--c-ink);border-bottom:1px solid var(--c-hairline);';
 ---
 <AdminLayout title="Dashboard — SarkariNaukriBoard">
   <style>
@@ -66,13 +66,13 @@ const tdStyle = 'padding:12px 16px;font-size:14px;color:#171717;border-bottom:1p
       .metrics-grid { grid-template-columns: 1fr !important; }
     }
   </style>
-  <h1 style="font-size:20px;font-weight:600;letter-spacing:-0.6px;color:#171717;margin:0 0 28px;">Dashboard</h1>
+  <h1 style="font-size:20px;font-weight:600;letter-spacing:-0.6px;color:var(--c-ink);margin:0 0 28px;">Dashboard</h1>
 
   <!-- Metric cards -->
   <div class="metrics-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:48px;">
     {metrics.map(m => (
-      <div style="background:#ffffff;border-radius:8px;padding:20px 24px;box-shadow:0px 1px 1px #00000005,0px 2px 2px #0000000a,inset 0 0 0 1px #00000014;">
-        <div style="font-size:12px;font-weight:400;color:#888888;margin-bottom:10px;">{m.label}</div>
+      <div style="background:var(--c-canvas);border-radius:8px;padding:20px 24px;box-shadow:var(--shadow-card);">
+        <div style="font-size:12px;font-weight:400;color:var(--c-muted);margin-bottom:10px;">{m.label}</div>
         <div style={`font-size:32px;font-weight:600;letter-spacing:-1px;color:${m.accent};`}>{m.value}</div>
       </div>
     ))}
@@ -80,11 +80,11 @@ const tdStyle = 'padding:12px 16px;font-size:14px;color:#171717;border-bottom:1p
 
   <!-- Expiring soon -->
   <section style="margin-bottom:48px;">
-    <h2 style="font-size:12px;font-weight:500;color:#888888;text-transform:uppercase;letter-spacing:0.06em;font-family:'Geist Mono',ui-monospace,monospace;margin:0 0 14px;">Expiring Soon</h2>
+    <h2 style="font-size:12px;font-weight:500;color:var(--c-muted);text-transform:uppercase;letter-spacing:0.06em;font-family:'Geist Mono',ui-monospace,monospace;margin:0 0 14px;">Expiring Soon</h2>
     {expiringRows.results.length === 0 ? (
-      <p style="font-size:14px;color:#888888;">No jobs expiring in the next 7 days.</p>
+      <p style="font-size:14px;color:var(--c-muted);">No jobs expiring in the next 7 days.</p>
     ) : (
-      <div style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:inset 0 0 0 1px #00000014;">
+      <div style="background:var(--c-canvas);border-radius:8px;overflow:hidden;box-shadow:var(--shadow-card-simple);">
         <div style="overflow-x:auto;">
           <table style="width:100%;border-collapse:collapse;font-size:14px;">
             <thead>
@@ -99,11 +99,11 @@ const tdStyle = 'padding:12px 16px;font-size:14px;color:#171717;border-bottom:1p
               {expiringRows.results.map(row => (
                 <tr>
                   <td style={tdStyle}>{row.title}</td>
-                  <td style={`${tdStyle}color:#4d4d4d;`}>{row.dept_name ?? '—'}</td>
-                  <td style={`${tdStyle}color:#ee0000;font-weight:500;`}>{formatDate(row.last_date)}</td>
+                  <td style={`${tdStyle}color:var(--c-body);`}>{row.dept_name ?? '—'}</td>
+                  <td style={`${tdStyle}color:var(--c-error);font-weight:500;`}>{formatDate(row.last_date)}</td>
                   <td style={tdStyle}>
-                    <a href={`/admin/jobs/${row.id}/edit`} style="color:#0070f3;text-decoration:none;margin-right:12px;">Edit</a>
-                    <a href={`/admin/jobs/${row.id}/delete`} style="color:#ee0000;text-decoration:none;">Delete</a>
+                    <a href={`/admin/jobs/${row.id}/edit`} style="color:var(--c-link);text-decoration:none;margin-right:12px;">Edit</a>
+                    <a href={`/admin/jobs/${row.id}/delete`} style="color:var(--c-error);text-decoration:none;">Delete</a>
                   </td>
                 </tr>
               ))}
@@ -116,11 +116,11 @@ const tdStyle = 'padding:12px 16px;font-size:14px;color:#171717;border-bottom:1p
 
   <!-- Recently added -->
   <section>
-    <h2 style="font-size:12px;font-weight:500;color:#888888;text-transform:uppercase;letter-spacing:0.06em;font-family:'Geist Mono',ui-monospace,monospace;margin:0 0 14px;">Recently Added</h2>
+    <h2 style="font-size:12px;font-weight:500;color:var(--c-muted);text-transform:uppercase;letter-spacing:0.06em;font-family:'Geist Mono',ui-monospace,monospace;margin:0 0 14px;">Recently Added</h2>
     {recentRows.results.length === 0 ? (
-      <p style="font-size:14px;color:#888888;">No jobs yet.</p>
+      <p style="font-size:14px;color:var(--c-muted);">No jobs yet.</p>
     ) : (
-      <div style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:inset 0 0 0 1px #00000014;">
+      <div style="background:var(--c-canvas);border-radius:8px;overflow:hidden;box-shadow:var(--shadow-card-simple);">
         <div style="overflow-x:auto;">
           <table style="width:100%;border-collapse:collapse;font-size:14px;">
             <thead>
@@ -136,12 +136,12 @@ const tdStyle = 'padding:12px 16px;font-size:14px;color:#171717;border-bottom:1p
               {recentRows.results.map(row => (
                 <tr>
                   <td style={tdStyle}>{row.title}</td>
-                  <td style={`${tdStyle}color:#4d4d4d;`}>{row.type_name ?? '—'}</td>
-                  <td style={`${tdStyle}color:#4d4d4d;`}>{row.state_name ?? '—'}</td>
-                  <td style={`${tdStyle}color:#888888;`}>{formatDate(row.created_at)}</td>
+                  <td style={`${tdStyle}color:var(--c-body);`}>{row.type_name ?? '—'}</td>
+                  <td style={`${tdStyle}color:var(--c-body);`}>{row.state_name ?? '—'}</td>
+                  <td style={`${tdStyle}color:var(--c-muted);`}>{formatDate(row.created_at)}</td>
                   <td style={tdStyle}>
-                    <a href={`/admin/jobs/${row.id}/edit`} style="color:#0070f3;text-decoration:none;margin-right:12px;">Edit</a>
-                    <a href={`/admin/jobs/${row.id}/delete`} style="color:#ee0000;text-decoration:none;">Delete</a>
+                    <a href={`/admin/jobs/${row.id}/edit`} style="color:var(--c-link);text-decoration:none;margin-right:12px;">Edit</a>
+                    <a href={`/admin/jobs/${row.id}/delete`} style="color:var(--c-error);text-decoration:none;">Delete</a>
                   </td>
                 </tr>
               ))}

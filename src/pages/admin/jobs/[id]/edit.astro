@@ -192,16 +192,16 @@ if (Astro.request.method === 'POST') {
   }
 }
 
-const inputStyle = 'width:100%;height:40px;padding:0 12px;border:1px solid #ebebeb;border-radius:6px;font-size:14px;color:#171717;box-sizing:border-box;font-family:inherit;background:#fff;';
-const slugInputStyle = 'width:100%;height:40px;padding:0 12px;border:1px solid #ebebeb;border-radius:6px;font-size:14px;color:#171717;box-sizing:border-box;font-family:"Geist Mono",ui-monospace,monospace;background:#fff;';
-const labelStyle = 'display:block;font-size:13px;font-weight:500;color:#4d4d4d;margin-bottom:6px;';
-const errStyle = 'display:block;color:#ee0000;font-size:12px;margin-top:4px;';
+const inputStyle = 'width:100%;height:40px;padding:0 12px;border:1px solid var(--c-hairline);border-radius:6px;font-size:14px;color:var(--c-ink);box-sizing:border-box;font-family:inherit;background:var(--c-canvas);';
+const slugInputStyle = 'width:100%;height:40px;padding:0 12px;border:1px solid var(--c-hairline);border-radius:6px;font-size:14px;color:var(--c-ink);box-sizing:border-box;font-family:"Geist Mono",ui-monospace,monospace;background:var(--c-canvas);';
+const labelStyle = 'display:block;font-size:13px;font-weight:500;color:var(--c-body);margin-bottom:6px;';
+const errStyle = 'display:block;color:var(--c-error);font-size:12px;margin-top:4px;';
 const fieldWrap = 'margin-bottom:18px;';
-const sectionHead = 'font-size:11px;font-weight:500;color:#888888;text-transform:uppercase;letter-spacing:0.06em;font-family:"Geist Mono",ui-monospace,monospace;margin:28px 0 14px;padding-bottom:8px;border-bottom:1px solid #ebebeb;';
+const sectionHead = 'font-size:11px;font-weight:500;color:var(--c-muted);text-transform:uppercase;letter-spacing:0.06em;font-family:"Geist Mono",ui-monospace,monospace;margin:28px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--c-hairline);';
 ---
 <AdminLayout title="Edit Job — SarkariNaukriBoard">
   <div style="max-width:720px;">
-    <h1 style="font-size:20px;font-weight:600;letter-spacing:-0.6px;color:#171717;margin:0 0 28px;">Edit Job</h1>
+    <h1 style="font-size:20px;font-weight:600;letter-spacing:-0.6px;color:var(--c-ink);margin:0 0 28px;">Edit Job</h1>
 
     <form method="POST" autocomplete="off">
 
@@ -311,7 +311,7 @@ const sectionHead = 'font-size:11px;font-weight:500;color:#888888;text-transform
 
       <!-- APPLY -->
       <p style={sectionHead}>Apply</p>
-      <p style="font-size:13px;color:#888888;margin:-8px 0 16px;">Provide at least one of Apply URL or Apply Email.</p>
+      <p style="font-size:13px;color:var(--c-muted);margin:-8px 0 16px;">Provide at least one of Apply URL or Apply Email.</p>
 
       <div style={fieldWrap}>
         <label style={labelStyle}>Apply URL</label>
@@ -330,7 +330,7 @@ const sectionHead = 'font-size:11px;font-weight:500;color:#888888;text-transform
 
       <div style={fieldWrap}>
         <label style={labelStyle}>Description</label>
-        <textarea name="description" rows="8" style="width:100%;padding:10px 12px;border:1px solid #ebebeb;border-radius:6px;font-size:14px;color:#171717;box-sizing:border-box;font-family:inherit;background:#fff;resize:vertical;">{values.description}</textarea>
+        <textarea name="description" rows="8" style="width:100%;padding:10px 12px;border:1px solid var(--c-hairline);border-radius:6px;font-size:14px;color:var(--c-ink);box-sizing:border-box;font-family:inherit;background:var(--c-canvas);resize:vertical;">{values.description}</textarea>
       </div>
 
       <!-- PUBLISHING -->
@@ -344,14 +344,14 @@ const sectionHead = 'font-size:11px;font-weight:500;color:#888888;text-transform
             placeholder="auto-generated from title"
             style={slugInputStyle} />
           {errors.slug && <span style={errStyle}>{errors.slug}</span>}
-          <span id="slug_warning" style="display:none;color:#f5a623;font-size:12px;margin-top:4px;font-weight:500;">
+          <span id="slug_warning" style="display:none;color:var(--c-warning);font-size:12px;margin-top:4px;font-weight:500;">
             ⚠ Changing the slug will break existing links.
           </span>
-          <span style="display:block;font-size:12px;color:#888888;margin-top:4px;">Edit with care — changing the slug breaks existing URLs.</span>
+          <span style="display:block;font-size:12px;color:var(--c-muted);margin-top:4px;">Edit with care — changing the slug breaks existing URLs.</span>
         </div>
         <div style={fieldWrap}>
           <label style={labelStyle}>Status</label>
-          <label style="display:flex;align-items:center;gap:8px;padding:10px 0;font-size:14px;color:#171717;cursor:pointer;">
+          <label style="display:flex;align-items:center;gap:8px;padding:10px 0;font-size:14px;color:var(--c-ink);cursor:pointer;">
             <input name="is_published" type="checkbox" value="1" checked={values.is_published === '1'}
               style="width:16px;height:16px;cursor:pointer;" />
             Published (visible on public site)
@@ -359,11 +359,11 @@ const sectionHead = 'font-size:11px;font-weight:500;color:#888888;text-transform
         </div>
       </div>
 
-      <div style="display:flex;gap:12px;margin-top:8px;padding-top:20px;border-top:1px solid #ebebeb;">
+      <div style="display:flex;gap:12px;margin-top:8px;padding-top:20px;border-top:1px solid var(--c-hairline);">
         <button type="submit" style="padding:0 20px;height:40px;background:#171717;color:#ffffff;border:0;border-radius:6px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;">
           Save Changes
         </button>
-        <a href="/admin/jobs" style="padding:0 16px;height:40px;display:inline-flex;align-items:center;color:#4d4d4d;font-size:14px;text-decoration:none;border:1px solid #ebebeb;border-radius:6px;">
+        <a href="/admin/jobs" style="padding:0 16px;height:40px;display:inline-flex;align-items:center;color:var(--c-body);font-size:14px;text-decoration:none;border:1px solid var(--c-hairline);border-radius:6px;">
           Cancel
         </a>
       </div>

@@ -37,6 +37,34 @@ const isActive = (href: string) =>
         --anav-active-bg: #f5f5f5;
         --page-bg: #fafafa;
         --body-color: #171717;
+
+        /* ── Design tokens ── */
+        --c-canvas: #ffffff;
+        --c-canvas-soft-2: #fafafa;
+        --c-canvas-soft-3: #f5f5f5;
+        --c-ink: #171717;
+        --c-body: #4d4d4d;
+        --c-muted: #888888;
+        --c-hairline: #ebebeb;
+        --c-link: #0070f3;
+        --c-error: #ee0000;
+        --c-error-soft: #f7d4d6;
+        --c-error-deep: #c50000;
+        --c-warning: #f5a623;
+        --c-warning-soft: #ffefcf;
+        --c-warning-deep: #ab570a;
+        --c-badge-live-bg: #dcfce7;
+        --c-badge-live-text: #15803d;
+        --c-badge-draft-bg: #ffefcf;
+        --c-badge-draft-text: #ab570a;
+        --c-badge-expired-bg: #f7d4d6;
+        --c-badge-expired-text: #c50000;
+        --c-flash-bg: #f0fdf4;
+        --c-flash-border: #bbf7d0;
+        --c-flash-accent: #22a565;
+        --c-flash-text: #15803d;
+        --shadow-card: 0px 1px 1px #00000005, 0px 2px 2px #0000000a, inset 0 0 0 1px #00000014;
+        --shadow-card-simple: inset 0 0 0 1px #00000014;
       }
 
       [data-theme="dark"] {
@@ -48,6 +76,34 @@ const isActive = (href: string) =>
         --anav-active-bg: #1f1f1f;
         --page-bg: #0a0a0a;
         --body-color: #ededed;
+
+        /* ── Design tokens dark ── */
+        --c-canvas: #161616;
+        --c-canvas-soft-2: #1a1a1a;
+        --c-canvas-soft-3: #222222;
+        --c-ink: #ededed;
+        --c-body: #a1a1a1;
+        --c-muted: #666666;
+        --c-hairline: #2e2e2e;
+        --c-link: #3b9eff;
+        --c-error: #ff4444;
+        --c-error-soft: #3d0000;
+        --c-error-deep: #ff6b6b;
+        --c-warning: #f5a623;
+        --c-warning-soft: #2d1900;
+        --c-warning-deep: #f5a623;
+        --c-badge-live-bg: #0a2d1a;
+        --c-badge-live-text: #4ade80;
+        --c-badge-draft-bg: #2d1900;
+        --c-badge-draft-text: #f5a623;
+        --c-badge-expired-bg: #3d0000;
+        --c-badge-expired-text: #ff6b6b;
+        --c-flash-bg: #0a2d1a;
+        --c-flash-border: #166534;
+        --c-flash-accent: #4ade80;
+        --c-flash-text: #4ade80;
+        --shadow-card: 0px 1px 1px rgba(0,0,0,0.3), 0px 2px 2px rgba(0,0,0,0.2), inset 0 0 0 1px rgba(255,255,255,0.08);
+        --shadow-card-simple: inset 0 0 0 1px rgba(255,255,255,0.08);
       }
 
       body {
@@ -265,6 +321,19 @@ const isActive = (href: string) =>
       @media (min-width: 769px) {
         .anav-hamburger   { display: none; }
         .anav-mobile-menu { display: none !important; }
+      }
+    </style>
+    <style is:global>
+      /* Native form elements follow the active color-scheme */
+      input:not([type="checkbox"]):not([type="radio"]),
+      select,
+      textarea {
+        color-scheme: light;
+      }
+      [data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]),
+      [data-theme="dark"] select,
+      [data-theme="dark"] textarea {
+        color-scheme: dark;
       }
     </style>
   </head>
