@@ -167,15 +167,16 @@ if (Astro.request.method === 'POST') {
   }
 }
 
-const inputStyle = 'width:100%;padding:10px 12px;border:1px solid #ebebeb;border-radius:6px;font-size:14px;color:#171717;box-sizing:border-box;font-family:inherit;';
-const labelStyle = 'display:block;font-size:13px;font-weight:500;color:#4d4d4d;margin-bottom:5px;';
+const inputStyle = 'width:100%;height:40px;padding:0 12px;border:1px solid #ebebeb;border-radius:6px;font-size:14px;color:#171717;box-sizing:border-box;font-family:inherit;background:#fff;';
+const slugInputStyle = 'width:100%;height:40px;padding:0 12px;border:1px solid #ebebeb;border-radius:6px;font-size:14px;color:#171717;box-sizing:border-box;font-family:"Geist Mono",ui-monospace,monospace;background:#fff;';
+const labelStyle = 'display:block;font-size:13px;font-weight:500;color:#4d4d4d;margin-bottom:6px;';
 const errStyle = 'display:block;color:#ee0000;font-size:12px;margin-top:4px;';
 const fieldWrap = 'margin-bottom:18px;';
-const sectionHead = 'font-size:15px;font-weight:600;color:#171717;margin:28px 0 16px;padding-bottom:8px;border-bottom:1px solid #ebebeb;';
+const sectionHead = 'font-size:11px;font-weight:500;color:#888888;text-transform:uppercase;letter-spacing:0.06em;font-family:"Geist Mono",ui-monospace,monospace;margin:28px 0 14px;padding-bottom:8px;border-bottom:1px solid #ebebeb;';
 ---
 <AdminLayout title="Post New Job — SarkariNaukriBoard">
   <div style="max-width:720px;">
-    <h1 style="font-size:22px;font-weight:600;letter-spacing:-0.4px;color:#171717;margin:0 0 24px;">Post New Job</h1>
+    <h1 style="font-size:20px;font-weight:600;letter-spacing:-0.6px;color:#171717;margin:0 0 28px;">Post New Job</h1>
 
     <form method="POST" autocomplete="off">
 
@@ -304,7 +305,7 @@ const sectionHead = 'font-size:15px;font-weight:600;color:#171717;margin:28px 0 
 
       <div style={fieldWrap}>
         <label style={labelStyle}>Description</label>
-        <textarea name="description" rows="8" style={`${inputStyle}resize:vertical;`}>{values.description}</textarea>
+        <textarea name="description" rows="8" style="width:100%;padding:10px 12px;border:1px solid #ebebeb;border-radius:6px;font-size:14px;color:#171717;box-sizing:border-box;font-family:inherit;background:#fff;resize:vertical;">{values.description}</textarea>
       </div>
 
       <!-- PUBLISHING -->
@@ -315,7 +316,7 @@ const sectionHead = 'font-size:15px;font-weight:600;color:#171717;margin:28px 0 
           <label style={labelStyle}>Slug</label>
           <input name="slug" id="slug_field" type="text" value={values.slug}
             placeholder="auto-generated from title"
-            style={`${inputStyle}font-family:monospace;`} />
+            style={slugInputStyle} />
           {errors.slug && <span style={errStyle}>{errors.slug}</span>}
           <span style="display:block;font-size:12px;color:#888888;margin-top:4px;">Auto-generated from title. Editable.</span>
         </div>
@@ -330,10 +331,10 @@ const sectionHead = 'font-size:15px;font-weight:600;color:#171717;margin:28px 0 
       </div>
 
       <div style="display:flex;gap:12px;margin-top:8px;padding-top:20px;border-top:1px solid #ebebeb;">
-        <button type="submit" style="padding:10px 24px;background:#171717;color:#fff;border:0;border-radius:6px;font-size:14px;font-weight:500;cursor:pointer;">
+        <button type="submit" style="padding:0 20px;height:40px;background:#171717;color:#ffffff;border:0;border-radius:6px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;">
           Save Job
         </button>
-        <a href="/admin/jobs" style="padding:10px 20px;color:#4d4d4d;font-size:14px;text-decoration:none;border:1px solid #ebebeb;border-radius:6px;">
+        <a href="/admin/jobs" style="padding:0 16px;height:40px;display:inline-flex;align-items:center;color:#4d4d4d;font-size:14px;text-decoration:none;border:1px solid #ebebeb;border-radius:6px;">
           Cancel
         </a>
       </div>

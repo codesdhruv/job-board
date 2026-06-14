@@ -39,7 +39,6 @@ const draftCount    = draftRes?.n     ?? 0;
 const expiredCount  = expiredRes?.n   ?? 0;
 
 function formatDate(dateStr: string): string {
-  // Handle both "YYYY-MM-DD" and "YYYY-MM-DD HH:MM:SS" (D1 datetime) formats
   const normalized = dateStr.includes('T') || dateStr.includes(' ')
     ? dateStr.replace(' ', 'T')
     : dateStr + 'T00:00:00';
@@ -49,91 +48,106 @@ function formatDate(dateStr: string): string {
 }
 
 const metrics = [
-  { label: 'Total live jobs',      value: liveCount,     accent: '#0070f3' },
-  { label: 'Expiring in 7 days',   value: expiringCount, accent: '#f5a623' },
-  { label: 'Drafts',               value: draftCount,    accent: '#888888' },
-  { label: 'Expired',              value: expiredCount,  accent: '#ee0000' },
+  { label: 'Total Live Jobs',    value: liveCount,     accent: '#0070f3' },
+  { label: 'Expiring in 7 Days', value: expiringCount, accent: '#f5a623' },
+  { label: 'Drafts',             value: draftCount,    accent: '#888888' },
+  { label: 'Expired',            value: expiredCount,  accent: '#ee0000' },
 ];
+
+const thStyle = 'text-align:left;padding:10px 16px;font-size:11px;font-weight:500;color:#888888;text-transform:uppercase;letter-spacing:0.06em;font-family:"Geist Mono",ui-monospace,monospace;background:#fafafa;border-bottom:1px solid #ebebeb;';
+const tdStyle = 'padding:12px 16px;font-size:14px;color:#171717;border-bottom:1px solid #ebebeb;';
 ---
 <AdminLayout title="Dashboard — SarkariNaukriBoard">
-  <h1 style="font-size:22px;font-weight:600;letter-spacing:-0.4px;color:#171717;margin:0 0 28px;">Dashboard</h1>
+  <style>
+    @media (max-width: 768px) {
+      .metrics-grid { grid-template-columns: 1fr 1fr !important; }
+    }
+    @media (max-width: 480px) {
+      .metrics-grid { grid-template-columns: 1fr !important; }
+    }
+  </style>
+  <h1 style="font-size:20px;font-weight:600;letter-spacing:-0.6px;color:#171717;margin:0 0 28px;">Dashboard</h1>
 
   <!-- Metric cards -->
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:40px;">
+  <div class="metrics-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:48px;">
     {metrics.map(m => (
-      <div style={`background:#fff;border:1px solid #ebebeb;border-radius:8px;padding:20px 24px;`}>
-        <div style="font-size:13px;color:#888888;margin-bottom:8px;">{m.label}</div>
+      <div style="background:#ffffff;border-radius:8px;padding:20px 24px;box-shadow:0px 1px 1px #00000005,0px 2px 2px #0000000a,inset 0 0 0 1px #00000014;">
+        <div style="font-size:12px;font-weight:400;color:#888888;margin-bottom:10px;">{m.label}</div>
         <div style={`font-size:32px;font-weight:600;letter-spacing:-1px;color:${m.accent};`}>{m.value}</div>
       </div>
     ))}
   </div>
 
   <!-- Expiring soon -->
-  <section style="margin-bottom:40px;">
-    <h2 style="font-size:16px;font-weight:600;color:#171717;margin:0 0 14px;">Expiring soon</h2>
+  <section style="margin-bottom:48px;">
+    <h2 style="font-size:12px;font-weight:500;color:#888888;text-transform:uppercase;letter-spacing:0.06em;font-family:'Geist Mono',ui-monospace,monospace;margin:0 0 14px;">Expiring Soon</h2>
     {expiringRows.results.length === 0 ? (
       <p style="font-size:14px;color:#888888;">No jobs expiring in the next 7 days.</p>
     ) : (
-      <div style="background:#fff;border:1px solid #ebebeb;border-radius:8px;overflow:hidden;">
-        <table style="width:100%;border-collapse:collapse;font-size:14px;">
-          <thead>
-            <tr style="background:#fafafa;border-bottom:1px solid #ebebeb;">
-              <th style="text-align:left;padding:10px 16px;font-weight:600;color:#171717;">Title</th>
-              <th style="text-align:left;padding:10px 16px;font-weight:600;color:#171717;">Department</th>
-              <th style="text-align:left;padding:10px 16px;font-weight:600;color:#171717;">Last date</th>
-              <th style="text-align:left;padding:10px 16px;font-weight:600;color:#171717;">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {expiringRows.results.map((row, i) => (
-              <tr style={i % 2 === 1 ? 'background:#fafafa;' : ''}>
-                <td style="padding:10px 16px;color:#171717;">{row.title}</td>
-                <td style="padding:10px 16px;color:#4d4d4d;">{row.dept_name ?? '—'}</td>
-                <td style="padding:10px 16px;color:#ee0000;font-weight:500;">{formatDate(row.last_date)}</td>
-                <td style="padding:10px 16px;">
-                  <a href={`/admin/jobs/${row.id}/edit`} style="color:#0070f3;text-decoration:none;margin-right:12px;">Edit</a>
-                  <a href={`/admin/jobs/${row.id}/delete`} style="color:#ee0000;text-decoration:none;">Delete</a>
-                </td>
+      <div style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:inset 0 0 0 1px #00000014;">
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:14px;">
+            <thead>
+              <tr>
+                <th style={thStyle}>Title</th>
+                <th style={thStyle}>Department</th>
+                <th style={thStyle}>Last Date</th>
+                <th style={thStyle}>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {expiringRows.results.map(row => (
+                <tr>
+                  <td style={tdStyle}>{row.title}</td>
+                  <td style={`${tdStyle}color:#4d4d4d;`}>{row.dept_name ?? '—'}</td>
+                  <td style={`${tdStyle}color:#ee0000;font-weight:500;`}>{formatDate(row.last_date)}</td>
+                  <td style={tdStyle}>
+                    <a href={`/admin/jobs/${row.id}/edit`} style="color:#0070f3;text-decoration:none;margin-right:12px;">Edit</a>
+                    <a href={`/admin/jobs/${row.id}/delete`} style="color:#ee0000;text-decoration:none;">Delete</a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     )}
   </section>
 
   <!-- Recently added -->
   <section>
-    <h2 style="font-size:16px;font-weight:600;color:#171717;margin:0 0 14px;">Recently added</h2>
+    <h2 style="font-size:12px;font-weight:500;color:#888888;text-transform:uppercase;letter-spacing:0.06em;font-family:'Geist Mono',ui-monospace,monospace;margin:0 0 14px;">Recently Added</h2>
     {recentRows.results.length === 0 ? (
       <p style="font-size:14px;color:#888888;">No jobs yet.</p>
     ) : (
-      <div style="background:#fff;border:1px solid #ebebeb;border-radius:8px;overflow:hidden;">
-        <table style="width:100%;border-collapse:collapse;font-size:14px;">
-          <thead>
-            <tr style="background:#fafafa;border-bottom:1px solid #ebebeb;">
-              <th style="text-align:left;padding:10px 16px;font-weight:600;color:#171717;">Title</th>
-              <th style="text-align:left;padding:10px 16px;font-weight:600;color:#171717;">Type</th>
-              <th style="text-align:left;padding:10px 16px;font-weight:600;color:#171717;">State</th>
-              <th style="text-align:left;padding:10px 16px;font-weight:600;color:#171717;">Posted</th>
-              <th style="text-align:left;padding:10px 16px;font-weight:600;color:#171717;">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {recentRows.results.map((row, i) => (
-              <tr style={i % 2 === 1 ? 'background:#fafafa;' : ''}>
-                <td style="padding:10px 16px;color:#171717;">{row.title}</td>
-                <td style="padding:10px 16px;color:#4d4d4d;">{row.type_name ?? '—'}</td>
-                <td style="padding:10px 16px;color:#4d4d4d;">{row.state_name ?? '—'}</td>
-                <td style="padding:10px 16px;color:#888888;">{formatDate(row.created_at)}</td>
-                <td style="padding:10px 16px;">
-                  <a href={`/admin/jobs/${row.id}/edit`} style="color:#0070f3;text-decoration:none;margin-right:12px;">Edit</a>
-                  <a href={`/admin/jobs/${row.id}/delete`} style="color:#ee0000;text-decoration:none;">Delete</a>
-                </td>
+      <div style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:inset 0 0 0 1px #00000014;">
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:14px;">
+            <thead>
+              <tr>
+                <th style={thStyle}>Title</th>
+                <th style={thStyle}>Type</th>
+                <th style={thStyle}>State</th>
+                <th style={thStyle}>Posted</th>
+                <th style={thStyle}>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {recentRows.results.map(row => (
+                <tr>
+                  <td style={tdStyle}>{row.title}</td>
+                  <td style={`${tdStyle}color:#4d4d4d;`}>{row.type_name ?? '—'}</td>
+                  <td style={`${tdStyle}color:#4d4d4d;`}>{row.state_name ?? '—'}</td>
+                  <td style={`${tdStyle}color:#888888;`}>{formatDate(row.created_at)}</td>
+                  <td style={tdStyle}>
+                    <a href={`/admin/jobs/${row.id}/edit`} style="color:#0070f3;text-decoration:none;margin-right:12px;">Edit</a>
+                    <a href={`/admin/jobs/${row.id}/delete`} style="color:#ee0000;text-decoration:none;">Delete</a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     )}
   </section>

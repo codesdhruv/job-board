@@ -53,10 +53,10 @@ function formatDate(dateStr: string): string {
   });
 }
 
-function statusFor(row: { is_published: number; last_date: string }): { label: string; color: string } {
-  if (row.is_published === 0) return { label: 'Draft', color: '#f5a623' };
-  if (row.last_date.slice(0, 10) < today) return { label: 'Expired', color: '#ee0000' };
-  return { label: 'Live', color: '#22a565' };
+function statusBadge(row: { is_published: number; last_date: string }): { label: string; bg: string; color: string } {
+  if (row.is_published === 0) return { label: 'Draft',   bg: '#ffefcf', color: '#ab570a' };
+  if (row.last_date.slice(0, 10) < today) return { label: 'Expired', bg: '#f7d4d6', color: '#c50000' };
+  return { label: 'Live', bg: '#dcfce7', color: '#15803d' };
 }
 
 const windowSize = 5;
@@ -65,79 +65,90 @@ let pageEnd = Math.min(totalPages, pageStart + windowSize - 1);
 pageStart = Math.max(1, pageEnd - windowSize + 1);
 const pageNumbers: number[] = [];
 for (let i = pageStart; i <= pageEnd; i++) pageNumbers.push(i);
+
+const thStyle = 'text-align:left;padding:10px 16px;font-size:11px;font-weight:500;color:#888888;text-transform:uppercase;letter-spacing:0.06em;font-family:"Geist Mono",ui-monospace,monospace;background:#fafafa;border-bottom:1px solid #ebebeb;';
+const tdStyle = 'padding:12px 16px;font-size:14px;color:#171717;border-bottom:1px solid #ebebeb;';
 ---
 <AdminLayout title="All Jobs — SarkariNaukriBoard">
   <div style="display:flex;justify-content:space-between;align-items:center;margin:0 0 24px;">
-    <h1 style="font-size:22px;font-weight:600;letter-spacing:-0.4px;color:#171717;margin:0;">All Jobs</h1>
-    <a href="/admin/jobs/new" style="display:inline-block;background:#171717;color:#fff;text-decoration:none;font-size:14px;font-weight:500;padding:8px 14px;border-radius:6px;">+ Add New Job</a>
+    <h1 style="font-size:20px;font-weight:600;letter-spacing:-0.6px;color:#171717;margin:0;">All Jobs</h1>
+    <a href="/admin/jobs/new" style="display:inline-flex;align-items:center;background:#171717;color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:0 14px;height:36px;border-radius:6px;">+ Add New Job</a>
   </div>
 
   {flash && (
-    <div style="background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;padding:10px 14px;border-radius:6px;font-size:14px;margin-bottom:20px;">
-      {flash}
+    <div style="display:flex;align-items:center;gap:10px;background:#f0fdf4;border:1px solid #bbf7d0;border-left:3px solid #22a565;color:#15803d;padding:10px 14px;border-radius:6px;font-size:14px;margin-bottom:20px;">
+      ✓ {flash}
     </div>
   )}
 
   {rows.length === 0 ? (
-    <p style="font-size:14px;color:#888888;">No jobs yet. Click + Add New Job to create one.</p>
+    <div style="background:#ffffff;border-radius:8px;padding:48px 24px;text-align:center;box-shadow:inset 0 0 0 1px #00000014;">
+      <p style="font-size:14px;color:#888888;margin:0;">No jobs yet. Click <strong>+ Add New Job</strong> to create one.</p>
+    </div>
   ) : (
-    <div style="background:#fff;border:1px solid #ebebeb;border-radius:8px;overflow:hidden;">
-      <table style="width:100%;border-collapse:collapse;font-size:14px;">
-        <thead>
-          <tr style="background:#fafafa;border-bottom:1px solid #ebebeb;">
-            <th style="text-align:left;padding:10px 16px;font-weight:600;color:#171717;">ID</th>
-            <th style="text-align:left;padding:10px 16px;font-weight:600;color:#171717;">Title</th>
-            <th style="text-align:left;padding:10px 16px;font-weight:600;color:#171717;">Type</th>
-            <th style="text-align:left;padding:10px 16px;font-weight:600;color:#171717;">State</th>
-            <th style="text-align:left;padding:10px 16px;font-weight:600;color:#171717;">Last Date</th>
-            <th style="text-align:left;padding:10px 16px;font-weight:600;color:#171717;">Status</th>
-            <th style="text-align:left;padding:10px 16px;font-weight:600;color:#171717;">Edit</th>
-            <th style="text-align:left;padding:10px 16px;font-weight:600;color:#171717;">Delete</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, i) => {
-            const status = statusFor(row);
-            return (
-              <tr style={i % 2 === 1 ? 'background:#fafafa;' : ''}>
-                <td style="padding:10px 16px;color:#888888;">{row.id}</td>
-                <td style="padding:10px 16px;color:#171717;">{row.title}</td>
-                <td style="padding:10px 16px;color:#4d4d4d;">{row.type_name ?? '—'}</td>
-                <td style="padding:10px 16px;color:#4d4d4d;">{row.state_name ?? '—'}</td>
-                <td style="padding:10px 16px;color:#4d4d4d;">{formatDate(row.last_date)}</td>
-                <td style="padding:10px 16px;"><span style={`color:${status.color};font-weight:500;`}>{status.label}</span></td>
-                <td style="padding:10px 16px;"><a href={`/admin/jobs/${row.id}/edit`} style="color:#0070f3;text-decoration:none;">Edit</a></td>
-                <td style="padding:10px 16px;">
-                  <form method="POST" action={`/admin/jobs/${row.id}/delete`} onsubmit="return confirm('Delete this job?')" style="display:inline;margin:0;">
-                    <button type="submit" style="background:none;border:none;color:#ee0000;cursor:pointer;font:inherit;padding:0;">Delete</button>
-                  </form>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+    <div style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:inset 0 0 0 1px #00000014;">
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:14px;">
+          <thead>
+            <tr>
+              <th style={thStyle}>ID</th>
+              <th style={thStyle}>Title</th>
+              <th style={thStyle}>Type</th>
+              <th style={thStyle}>State</th>
+              <th style={thStyle}>Last Date</th>
+              <th style={thStyle}>Status</th>
+              <th style={thStyle}>Edit</th>
+              <th style={thStyle}>Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(row => {
+              const s = statusBadge(row);
+              return (
+                <tr>
+                  <td style={`${tdStyle}color:#888888;`}>{row.id}</td>
+                  <td style={tdStyle}>{row.title}</td>
+                  <td style={`${tdStyle}color:#4d4d4d;`}>{row.type_name ?? '—'}</td>
+                  <td style={`${tdStyle}color:#4d4d4d;`}>{row.state_name ?? '—'}</td>
+                  <td style={`${tdStyle}color:#4d4d4d;`}>{formatDate(row.last_date)}</td>
+                  <td style={tdStyle}>
+                    <span style={`display:inline-block;padding:2px 8px;border-radius:9999px;font-size:12px;font-weight:500;background:${s.bg};color:${s.color};`}>{s.label}</span>
+                  </td>
+                  <td style={tdStyle}>
+                    <a href={`/admin/jobs/${row.id}/edit`} style="color:#0070f3;text-decoration:none;">Edit</a>
+                  </td>
+                  <td style={tdStyle}>
+                    <form method="POST" action={`/admin/jobs/${row.id}/delete`} onsubmit="return confirm('Delete this job?')" style="display:inline;margin:0;">
+                      <button type="submit" style="background:none;border:none;color:#ee0000;cursor:pointer;font:inherit;padding:0;">Delete</button>
+                    </form>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   )}
 
   {totalPages > 1 && (
-    <div style="display:flex;justify-content:center;align-items:center;gap:6px;margin-top:24px;font-size:14px;">
+    <div style="display:flex;justify-content:center;align-items:center;gap:6px;margin-top:28px;font-size:14px;">
       {page > 1 ? (
-        <a href={`/admin/jobs?page=${page - 1}`} style="color:#0070f3;text-decoration:none;padding:6px 10px;">« Prev</a>
+        <a href={`/admin/jobs?page=${page - 1}`} style="color:#171717;text-decoration:none;padding:0 10px;height:32px;display:inline-flex;align-items:center;border:1px solid #ebebeb;border-radius:6px;">← Prev</a>
       ) : (
-        <span style="color:#cccccc;padding:6px 10px;">« Prev</span>
+        <span style="color:#ebebeb;padding:0 10px;height:32px;display:inline-flex;align-items:center;border:1px solid #ebebeb;border-radius:6px;">← Prev</span>
       )}
       {pageNumbers.map(n => (
         n === page ? (
-          <span style="color:#171717;font-weight:600;padding:6px 10px;">{n}</span>
+          <span style="font-weight:600;color:#171717;padding:0 10px;height:32px;display:inline-flex;align-items:center;background:#f5f5f5;border:1px solid #ebebeb;border-radius:6px;">{n}</span>
         ) : (
-          <a href={`/admin/jobs?page=${n}`} style="color:#0070f3;text-decoration:none;padding:6px 10px;">{n}</a>
+          <a href={`/admin/jobs?page=${n}`} style="color:#171717;text-decoration:none;padding:0 10px;height:32px;display:inline-flex;align-items:center;border:1px solid #ebebeb;border-radius:6px;">{n}</a>
         )
       ))}
       {page < totalPages ? (
-        <a href={`/admin/jobs?page=${page + 1}`} style="color:#0070f3;text-decoration:none;padding:6px 10px;">Next »</a>
+        <a href={`/admin/jobs?page=${page + 1}`} style="color:#171717;text-decoration:none;padding:0 10px;height:32px;display:inline-flex;align-items:center;border:1px solid #ebebeb;border-radius:6px;">Next →</a>
       ) : (
-        <span style="color:#cccccc;padding:6px 10px;">Next »</span>
+        <span style="color:#ebebeb;padding:0 10px;height:32px;display:inline-flex;align-items:center;border:1px solid #ebebeb;border-radius:6px;">Next →</span>
       )}
     </div>
   )}
