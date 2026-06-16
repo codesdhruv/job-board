@@ -7,10 +7,10 @@ import { getDb } from '../lib/db';
 const db = getDb();
 
 const jobTypes = [
-  { slug: 'government', name: 'Government' },
-  { slug: 'psu',        name: 'PSU / Semi-Govt' },
-  { slug: 'private',    name: 'Private' },
-  { slug: 'freelance',  name: 'Freelance / Gig' },
+  { slug: 'government', name: 'Government',     icon: '🏛️' },
+  { slug: 'psu',        name: 'PSU / Semi-Govt', icon: '🏗️' },
+  { slug: 'private',    name: 'Private',         icon: '🏢' },
+  { slug: 'freelance',  name: 'Freelance / Gig', icon: '💼' },
 ];
 
 const [totalRes, typeCountsRes, latestRes, featuredStatesRes, categoriesRes] = await Promise.all([
@@ -56,24 +56,13 @@ const typeCountMap = new Map<string, number>(
 );
 
 const latestJobs = latestRes.results as Array<{
-  id: number;
-  slug: string;
-  title: string;
-  last_date: string;
-  vacancies: number | null;
-  salary: string | null;
-  type_name: string | null;
-  type_slug: string | null;
-  state_name: string | null;
-  dept_name: string | null;
+  id: number; slug: string; title: string; last_date: string;
+  vacancies: number | null; salary: string | null;
+  type_name: string | null; type_slug: string | null;
+  state_name: string | null; dept_name: string | null;
 }>;
 
-const featuredStates = featuredStatesRes.results as Array<{
-  name: string;
-  slug: string;
-  count: number;
-}>;
-
+const featuredStates = featuredStatesRes.results as Array<{ name: string; slug: string; count: number }>;
 const categories = categoriesRes.results as Array<{ name: string; slug: string }>;
 
 const quickLinks = [
@@ -95,77 +84,69 @@ const canonical = `${siteUrl}/`;
   <main id="main-content">
 
     <!-- Hero -->
-    <section class="bg-canvas-soft border-b border-hairline py-10 sm:py-14 px-4 sm:px-6">
-      <div class="max-w-[760px] mx-auto text-center">
-        <h1 class="text-balance text-[28px] sm:text-[36px] font-semibold leading-[1.15] sm:leading-[44px] tracking-[-1.2px] sm:tracking-[-1.8px] text-ink mb-3">
+    <section class="bg-canvas border-b border-hairline py-16 sm:py-20 px-6 text-center">
+      <div class="max-w-[680px] mx-auto">
+        <h1 class="text-[28px] font-bold leading-[1.43] text-ink mb-2">
           Find Your Dream Government Job
         </h1>
-        <p class="text-base leading-6 text-body mb-6">
+        <p class="text-base text-muted mb-7">
           Browse {totalCount} sarkari and private jobs across India.
         </p>
 
-        <form action="/jobs" method="get" role="search" class="flex gap-2 max-w-[480px] mx-auto mb-5 flex-wrap">
+        <form action="/jobs" method="get" role="search" class="search-pill max-w-[560px] mx-auto mb-5">
           <input
             type="search"
             name="q"
             placeholder="Search jobs by title, department…"
             aria-label="Search jobs"
             autocomplete="off"
-            class="flex-[1_1_200px] h-11 px-3 font-sans text-base text-ink bg-canvas border border-hairline rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:border-transparent transition-shadow"
           />
-          <button
-            type="submit"
-            class="h-11 px-5 font-sans text-base font-medium text-on-primary bg-ink border-none rounded-pill cursor-pointer hover:bg-[#2e2e2e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 transition-colors"
-          >
-            Search
+          <button type="submit" class="search-orb" aria-label="Search">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M10.5 3a7.5 7.5 0 1 1 0 15 7.5 7.5 0 0 1 0-15zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11zm8.47 10.56 1.41 1.41-1.41 1.42-1.42-1.42a1 1 0 1 1 1.42-1.41z"/>
+            </svg>
           </button>
         </form>
 
         <div class="flex gap-2 flex-wrap justify-center">
           {quickLinks.map((q) => (
-            <a
-              href={q.href}
-              class="inline-block px-3 sm:px-4 py-1.5 text-sm text-body bg-canvas border border-hairline rounded-pill-sm hover:bg-canvas-soft-2 hover:border-hairline-strong transition-colors"
-            >
-              {q.label}
-            </a>
+            <a href={q.href} class="quick-link">{q.label}</a>
           ))}
         </div>
       </div>
     </section>
 
     <!-- Job-type cards -->
-    <section class="py-8 sm:py-12 px-4 sm:px-6 max-w-[1200px] mx-auto">
-      <h2 class="text-balance text-[22px] sm:text-[26px] font-semibold leading-7 sm:leading-9 tracking-[-0.88px] sm:tracking-[-1.04px] text-ink mb-5 sm:mb-6">
+    <section class="py-12 px-6 max-w-[1200px] mx-auto">
+      <h2 class="text-[22px] font-semibold leading-[1.18] tracking-[-0.44px] text-ink mb-6">
         Browse by Job Type
       </h2>
       <div class="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4">
         {jobTypes.map((t) => (
           <a
             href={`/jobs?type=${t.slug}`}
-            class="block p-6 bg-canvas rounded-md text-ink no-underline shadow-card hover:shadow-card-hover transition-all"
+            class="block p-6 bg-canvas rounded-[14px] border border-hairline no-underline text-ink hover:border-hairline-strong hover:shadow-card transition-all"
           >
-            <div class="text-2xl font-semibold leading-8 tracking-[-0.96px]">
-              {t.name}
-            </div>
-            <div class="text-sm text-muted mt-1">
-              {typeCountMap.get(t.slug) ?? 0} active jobs
-            </div>
+            <span class="text-3xl mb-3 block" aria-hidden="true">{t.icon}</span>
+            <div class="text-base font-semibold leading-6 text-ink">{t.name}</div>
+            <div class="text-sm text-muted mt-1">{typeCountMap.get(t.slug) ?? 0} active jobs</div>
           </a>
         ))}
       </div>
     </section>
 
     <!-- Latest jobs -->
-    <section class="py-8 sm:py-12 px-4 sm:px-6 max-w-[1200px] mx-auto border-t border-hairline">
-      <div class="flex items-baseline justify-between flex-wrap gap-4 mb-5 sm:mb-6">
-        <h2 class="text-balance text-[22px] sm:text-[26px] font-semibold leading-7 sm:leading-9 tracking-[-0.88px] sm:tracking-[-1.04px] text-ink m-0">
+    <section class="py-12 px-6 max-w-[1200px] mx-auto border-t border-hairline">
+      <div class="flex items-baseline justify-between flex-wrap gap-4 mb-6">
+        <h2 class="text-[22px] font-semibold leading-[1.18] tracking-[-0.44px] text-ink m-0">
           Latest Jobs
         </h2>
-        <a href="/jobs" class="text-base text-link hover:underline">View all jobs →</a>
+        <a href="/jobs" class="text-sm font-medium text-ink underline underline-offset-2 hover:text-primary transition-colors">
+          View all jobs →
+        </a>
       </div>
       {latestJobs.length === 0 ? (
-        <p class="text-body">No active jobs right now. Check back soon.</p>
+        <p class="text-base text-muted">No active jobs right now. Check back soon.</p>
       ) : (
         <div class="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">
           {latestJobs.map((job) => <JobCard job={job} />)}
@@ -175,20 +156,22 @@ const canonical = `${siteUrl}/`;
 
     <!-- Featured states -->
     {featuredStates.length > 0 && (
-      <section class="py-8 sm:py-12 px-4 sm:px-6 max-w-[1200px] mx-auto border-t border-hairline">
-        <div class="flex items-baseline justify-between flex-wrap gap-4 mb-5 sm:mb-6">
-          <h2 class="text-balance text-[22px] sm:text-[26px] font-semibold leading-7 sm:leading-9 tracking-[-0.88px] sm:tracking-[-1.04px] text-ink m-0">
+      <section class="py-12 px-6 max-w-[1200px] mx-auto border-t border-hairline">
+        <div class="flex items-baseline justify-between flex-wrap gap-4 mb-6">
+          <h2 class="text-[22px] font-semibold leading-[1.18] tracking-[-0.44px] text-ink m-0">
             Browse by State
           </h2>
-          <a href="/states" class="text-base text-link hover:underline">View all states →</a>
+          <a href="/states" class="text-sm font-medium text-ink underline underline-offset-2 hover:text-primary transition-colors">
+            View all states →
+          </a>
         </div>
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3">
+        <div class="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3">
           {featuredStates.map((s) => (
             <a
               href={`/state/${s.slug}`}
-              class="block p-4 bg-canvas-soft border border-hairline rounded-md text-ink no-underline hover:bg-canvas-soft-2 hover:border-hairline-strong transition-colors"
+              class="block p-4 bg-canvas-soft rounded-[14px] border border-transparent no-underline text-ink hover:border-hairline hover:shadow-card transition-all"
             >
-              <div class="text-base font-medium">{s.name}</div>
+              <div class="text-base font-semibold text-ink">{s.name}</div>
               <div class="text-sm text-muted mt-0.5">{s.count} jobs</div>
             </a>
           ))}
@@ -197,18 +180,13 @@ const canonical = `${siteUrl}/`;
     )}
 
     <!-- Browse by category -->
-    <section class="py-8 sm:py-12 px-4 sm:px-6 max-w-[1200px] mx-auto border-t border-hairline">
-      <h2 class="text-balance text-[22px] sm:text-[26px] font-semibold leading-7 sm:leading-9 tracking-[-0.88px] sm:tracking-[-1.04px] text-ink mb-5 sm:mb-6">
+    <section class="py-12 px-6 max-w-[1200px] mx-auto border-t border-hairline">
+      <h2 class="text-[22px] font-semibold leading-[1.18] tracking-[-0.44px] text-ink mb-6">
         Browse by Category
       </h2>
       <div class="flex flex-wrap gap-2">
         {categories.map((c) => (
-          <a
-            href={`/category/${c.slug}`}
-            class="inline-block px-4 py-2 text-sm text-ink bg-canvas border border-hairline rounded-pill-sm no-underline hover:bg-canvas-soft-2 hover:border-hairline-strong transition-colors"
-          >
-            {c.name}
-          </a>
+          <a href={`/category/${c.slug}`} class="category-chip">{c.name}</a>
         ))}
       </div>
     </section>

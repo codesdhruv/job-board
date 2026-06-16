@@ -46,7 +46,7 @@ const canonical = siteUrl ? `${siteUrl.replace(/\/$/, '')}/states` : undefined;
     {allIndia && (
       <a
         href={`/state/${allIndia.slug}`}
-        class="flex items-center justify-between p-5 bg-canvas-soft border border-hairline rounded-lg text-ink no-underline hover:bg-canvas-soft-2 hover:border-hairline-strong transition-colors mb-10"
+        class="flex items-center justify-between p-5 bg-canvas-soft rounded-[14px] border border-hairline text-ink no-underline hover:border-hairline-strong hover:shadow-card transition-all mb-10"
       >
         <div>
           <span class="text-lg font-semibold">All India — Central Govt</span>
@@ -63,7 +63,7 @@ const canonical = siteUrl ? `${siteUrl.replace(/\/$/, '')}/states` : undefined;
           <a
             href={`/state/${s.slug}`}
             aria-label={s.job_count === 0 ? `${s.name} — 0 active jobs` : undefined}
-            class={`block px-3 py-2.5 border border-hairline rounded-md text-sm no-underline hover:bg-canvas-soft-2 hover:border-hairline-strong transition-colors ${s.job_count === 0 ? 'text-muted' : 'text-ink'}`}
+            class={`block px-4 py-3 bg-canvas rounded-[14px] border border-hairline text-sm no-underline hover:border-hairline-strong hover:shadow-card transition-all ${s.job_count === 0 ? 'text-muted' : 'text-ink'}`}
           >
             <span class="font-medium">{s.name}</span>
             <span class="text-muted ml-1">({s.job_count})</span>
@@ -79,7 +79,7 @@ const canonical = siteUrl ? `${siteUrl.replace(/\/$/, '')}/states` : undefined;
           <a
             href={`/state/${s.slug}`}
             aria-label={s.job_count === 0 ? `${s.name} — 0 active jobs` : undefined}
-            class={`block px-3 py-2.5 border border-hairline rounded-md text-sm no-underline hover:bg-canvas-soft-2 hover:border-hairline-strong transition-colors ${s.job_count === 0 ? 'text-muted' : 'text-ink'}`}
+            class={`block px-4 py-3 bg-canvas rounded-[14px] border border-hairline text-sm no-underline hover:border-hairline-strong hover:shadow-card transition-all ${s.job_count === 0 ? 'text-muted' : 'text-ink'}`}
           >
             <span class="font-medium">{s.name}</span>
             <span class="text-muted ml-1">({s.job_count})</span>

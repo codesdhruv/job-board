@@ -4,33 +4,42 @@
 @variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: Geist, Inter, system-ui, -apple-system, sans-serif;
+  /* Inter is the recommended open-source substitute for Airbnb Cereal VF */
+  --font-sans: Inter, 'Airbnb Cereal VF', Circular, -apple-system, system-ui, Roboto, 'Helvetica Neue', sans-serif;
   --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
 
-  /* DESIGN.md colour tokens — light mode defaults */
-  --color-ink:             #171717;
-  --color-body:            #4d4d4d;
-  --color-muted:           #888888;
-  --color-hairline:        #ebebeb;
-  --color-hairline-strong: #a1a1a1;
+  /* ── Airbnb color tokens — light mode ── */
+  --color-primary:          #ff385c;
+  --color-primary-active:   #e00b41;
+  --color-primary-disabled: #ffd1da;
+
+  --color-ink:             #222222;
+  --color-body:            #3f3f3f;
+  --color-muted:           #6a6a6a;
+  --color-hairline:        #dddddd;
+  --color-hairline-strong: #c1c1c1;
   --color-canvas:          #ffffff;
-  --color-canvas-soft:     #fafafa;
-  --color-canvas-soft-2:   #f5f5f5;
+  --color-canvas-soft:     #f7f7f7;
+  --color-canvas-soft-2:   #f2f2f2;
   --color-link:            #0070f3;
   --color-link-deep:       #0761d1;
-  --color-error:           #ee0000;
+  --color-error:           #c13515;
   --color-warning:         #f5a623;
   --color-on-primary:      #ffffff;
 
-  /* Radius scale */
-  --radius-sm:      6px;
-  --radius-md:      8px;
-  --radius-lg:      12px;
-  --radius-pill:    100px;
+  /* ── Airbnb radius scale ── */
+  --radius-xs:   4px;
+  --radius-sm:   8px;    /* buttons */
+  --radius-md:   14px;   /* property / job cards */
+  --radius-lg:   20px;
+  --radius-xl:   32px;
+  --radius-pill: 9999px; /* search bars, chips */
+
+  /* legacy aliases used by existing pages */
   --radius-pill-sm: 64px;
 }
 
-/* Dark mode: override CSS custom properties so every Tailwind utility auto-adapts */
+/* ── Dark mode overrides ── */
 html.dark {
   --color-ink:             #ededed;
   --color-body:            #a1a1a1;
@@ -44,30 +53,190 @@ html.dark {
   --color-on-primary:      #0a0a0a;
 }
 
-/* Stacked card shadows — Vercel Level 2 & 3 */
+/* ── Airbnb single shadow tier ── */
 @utility shadow-card {
   box-shadow:
-    0 0 0 1px var(--color-hairline) inset,
-    0 1px 1px rgba(0, 0, 0, 0.03),
-    0 2px 2px rgba(0, 0, 0, 0.05);
+    rgba(0, 0, 0, 0.02) 0 0 0 1px,
+    rgba(0, 0, 0, 0.04) 0 2px 6px 0,
+    rgba(0, 0, 0, 0.08) 0 4px 8px 0;
 }
 
 @utility shadow-card-hover {
   box-shadow:
-    0 0 0 1px var(--color-hairline-strong) inset,
-    0 2px 4px rgba(0, 0, 0, 0.07),
-    0 4px 8px rgba(0, 0, 0, 0.07);
+    rgba(0, 0, 0, 0.04) 0 0 0 1px,
+    rgba(0, 0, 0, 0.08) 0 4px 12px 0,
+    rgba(0, 0, 0, 0.12) 0 8px 16px 0;
 }
 
-/* Level 4 float-stack — pricing cards, apply sidebar */
 @utility shadow-float {
   box-shadow:
-    0 0 0 1px var(--color-hairline) inset,
-    0 2px 2px rgba(0, 0, 0, 0.04),
-    0 8px 16px -4px rgba(0, 0, 0, 0.06);
+    rgba(0, 0, 0, 0.02) 0 0 0 1px,
+    rgba(0, 0, 0, 0.04) 0 2px 6px 0,
+    rgba(0, 0, 0, 0.10) 0 8px 20px 0;
 }
 
-/* Honour reduced-motion for all transitions */
+/* ────────────────────────────────────────────
+   Airbnb component library
+   All rules here are global (no inline styles)
+   ──────────────────────────────────────────── */
+
+/* ── Search pill (signature Airbnb element) ── */
+.search-pill {
+  display: flex;
+  align-items: center;
+  background: var(--color-canvas);
+  border-radius: 9999px;
+  border: 1px solid var(--color-hairline);
+  box-shadow:
+    rgba(0, 0, 0, 0.02) 0 0 0 1px,
+    rgba(0, 0, 0, 0.04) 0 2px 6px 0,
+    rgba(0, 0, 0, 0.10) 0 4px 8px 0;
+  height: 64px;
+  overflow: hidden;
+}
+.search-pill input[type="search"],
+.search-pill input[type="text"] {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  padding: 0 24px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-ink);
+  background: transparent;
+  height: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.search-pill input::placeholder {
+  color: var(--color-muted);
+}
+
+/* ── Search orb (Rausch circular CTA) ── */
+.search-orb {
+  width: 48px;
+  height: 48px;
+  border-radius: 9999px;
+  background: var(--color-primary);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  flex-shrink: 0;
+  color: #ffffff;
+  transition: background 0.15s;
+}
+.search-orb:hover  { background: var(--color-primary-active); }
+.search-orb:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+.search-orb svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  pointer-events: none;
+}
+
+/* ── Quick-link pill tags ── */
+.quick-link {
+  display: inline-block;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.29;
+  color: var(--color-ink);
+  background: var(--color-canvas);
+  border: 1px solid var(--color-hairline);
+  border-radius: 9999px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+.quick-link:hover {
+  border-color: var(--color-hairline-strong);
+  box-shadow:
+    rgba(0, 0, 0, 0.02) 0 0 0 1px,
+    rgba(0, 0, 0, 0.04) 0 2px 6px 0,
+    rgba(0, 0, 0, 0.10) 0 4px 8px 0;
+}
+
+/* ── Category chips ── */
+.category-chip {
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.29;
+  color: var(--color-ink);
+  background: var(--color-canvas);
+  border: 1px solid var(--color-hairline);
+  border-radius: 9999px;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.category-chip:hover {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
+}
+
+/* ── Primary button (Rausch) ── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 48px;
+  padding: 0 24px;
+  background: var(--color-primary);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.25;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.btn-primary:hover         { background: var(--color-primary-active); }
+.btn-primary:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+.btn-primary.btn-pill      { border-radius: 9999px; }
+.btn-primary.btn-full      { width: 100%; }
+.btn-primary.btn-sm        { height: 40px; font-size: 14px; padding: 0 16px; }
+
+/* ── Job / listing card ── */
+.listing-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+  background: var(--color-canvas);
+  border-radius: 14px;
+  border: 1px solid var(--color-hairline);
+  text-decoration: none;
+  color: var(--color-ink);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.listing-card:hover {
+  border-color: var(--color-hairline-strong);
+  box-shadow:
+    rgba(0, 0, 0, 0.02) 0 0 0 1px,
+    rgba(0, 0, 0, 0.04) 0 2px 6px 0,
+    rgba(0, 0, 0, 0.08) 0 4px 8px 0;
+}
+
+/* ── Honour reduced-motion ── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

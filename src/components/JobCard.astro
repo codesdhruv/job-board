@@ -22,19 +22,19 @@ const daysLeft = Math.floor((last.getTime() - today.getTime()) / 86_400_000);
 const isUrgent = daysLeft >= 0 && daysLeft <= 7;
 
 const badgeClass: Record<string, string> = {
-  government: 'bg-blue-50 text-blue-700 border-blue-200',
-  psu:        'bg-orange-50 text-orange-700 border-orange-200',
-  private:    'bg-green-50 text-green-700 border-green-200',
-  freelance:  'bg-purple-50 text-purple-700 border-purple-200',
+  government: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-900',
+  psu:        'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950 dark:text-orange-300 dark:border-orange-900',
+  private:    'bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-900',
+  freelance:  'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-900',
 };
 const badge = job.type_slug ? (badgeClass[job.type_slug] ?? 'bg-canvas-soft text-body border-hairline') : '';
 ---
-<article class="group flex flex-col gap-3 p-6 bg-canvas rounded-md shadow-card hover:shadow-card-hover transition-all">
+<article class="listing-card">
   <div class="flex items-start justify-between gap-3">
     <h3 class="text-base font-medium leading-6 text-ink m-0 flex-1 min-w-0">
       <a
         href={`/jobs/${job.slug}`}
-        class="text-ink no-underline hover:text-link transition-colors line-clamp-2"
+        class="text-ink no-underline hover:text-primary transition-colors line-clamp-2"
       >
         {job.title}
       </a>
@@ -62,7 +62,7 @@ const badge = job.type_slug ? (badgeClass[job.type_slug] ?? 'bg-canvas-soft text
     </span>
     <a
       href={`/jobs/${job.slug}`}
-      class="text-sm text-link hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link rounded-xs"
+      class="text-sm text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xs"
     >
       View details →
     </a>

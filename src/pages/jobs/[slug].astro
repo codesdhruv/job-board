@@ -107,9 +107,7 @@ const pageTitle = job
     <main id="main-content" class="max-w-[720px] mx-auto px-6 py-16 text-center">
       <h1 class="text-[32px] font-semibold text-ink mb-4">Job Not Found</h1>
       <p class="text-body mb-6">The job you are looking for does not exist or is no longer published.</p>
-      <a href="/jobs" class="inline-flex items-center h-10 px-5 bg-ink text-on-primary text-sm font-medium rounded-pill no-underline hover:bg-[#2e2e2e] transition-colors">
-        ← Browse All Jobs
-      </a>
+      <a href="/jobs" class="btn-primary btn-sm">← Browse All Jobs</a>
     </main>
   ) : (
     <main id="main-content" class="max-w-[1200px] mx-auto px-6 py-10">
@@ -256,14 +254,14 @@ const pageTitle = job
               href={job.apply_url}
               target="_blank"
               rel="noopener noreferrer"
-              class="flex items-center justify-center w-full h-12 bg-ink text-on-primary text-sm font-medium rounded-pill no-underline hover:bg-[#2e2e2e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 transition-colors mb-4"
+              class="btn-primary btn-pill btn-full mb-4"
             >
               Apply Now →
             </a>
           ) : applyMode === 'email' ? (
             <a
               href={`mailto:${job.apply_email}`}
-              class="flex items-center justify-center w-full h-12 bg-ink text-on-primary text-sm font-medium rounded-pill no-underline hover:bg-[#2e2e2e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 transition-colors mb-4"
+              class="btn-primary btn-pill btn-full mb-4"
             >
               Apply via Email →
             </a>

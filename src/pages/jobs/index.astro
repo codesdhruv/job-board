@@ -164,7 +164,7 @@ const listingDescription = 'Browse government, PSU and private jobs in India. Fi
     </div>
 
     <!-- Search -->
-    <form method="get" action="/jobs" role="search" class="flex gap-2 mb-6 flex-wrap">
+    <form method="get" action="/jobs" role="search" class="search-pill max-w-[640px] mb-6">
       {preservedForSearch.map((p) => <input type="hidden" name={p.key} value={p.value} />)}
       <input
         type="search"
@@ -174,13 +174,11 @@ const listingDescription = 'Browse government, PSU and private jobs in India. Fi
         placeholder="Search jobs by title, department…"
         aria-label="Search jobs"
         autocomplete="off"
-        class="flex-[1_1_280px] h-10 px-3 font-sans text-sm text-ink bg-canvas border border-hairline rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:border-transparent transition-shadow"
       />
-      <button
-        type="submit"
-        class="h-10 px-5 font-sans text-sm font-medium text-on-primary bg-ink border-none rounded-sm cursor-pointer hover:bg-[#2e2e2e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 transition-colors"
-      >
-        Search
+      <button type="submit" class="search-orb" aria-label="Search">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M10.5 3a7.5 7.5 0 1 1 0 15 7.5 7.5 0 0 1 0-15zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11zm8.47 10.56 1.41 1.41-1.41 1.42-1.42-1.42a1 1 0 1 1 1.42-1.41z"/>
+        </svg>
       </button>
     </form>
 
@@ -197,7 +195,7 @@ const listingDescription = 'Browse government, PSU and private jobs in India. Fi
           name="state"
           aria-label="Filter by state"
           onchange="this.form.submit()"
-          class="h-10 px-3 border border-hairline rounded-sm bg-canvas text-ink text-sm outline-none focus-visible:ring-2 focus-visible:ring-ink cursor-pointer"
+          class="h-10 px-3 border border-hairline rounded-[8px] bg-canvas text-ink text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
         >
           <option value="" selected={!activeState}>All India</option>
           <optgroup label="States">
@@ -220,7 +218,7 @@ const listingDescription = 'Browse government, PSU and private jobs in India. Fi
           name="category"
           aria-label="Filter by category"
           onchange="this.form.submit()"
-          class="h-10 px-3 border border-hairline rounded-sm bg-canvas text-ink text-sm outline-none focus-visible:ring-2 focus-visible:ring-ink cursor-pointer"
+          class="h-10 px-3 border border-hairline rounded-[8px] bg-canvas text-ink text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
         >
           <option value="" selected={!activeCategory}>All categories</option>
           {categories.map((c) => (
@@ -241,7 +239,7 @@ const listingDescription = 'Browse government, PSU and private jobs in India. Fi
             aria-current={isActive ? 'page' : undefined}
             class={`px-4 py-3 text-sm whitespace-nowrap no-underline transition-colors shrink-0 ${
               isActive
-                ? 'text-ink font-semibold border-b-2 border-ink -mb-px'
+                ? 'text-primary font-semibold border-b-2 border-primary -mb-px'
                 : 'text-body hover:text-ink'
             }`}
           >

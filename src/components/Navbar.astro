@@ -27,7 +27,7 @@ function isActive(link: { href: string; exact?: boolean; type?: string }) {
     z-index: 50;
     background: var(--color-canvas);
     border-bottom: 1px solid var(--color-hairline);
-    font-family: Geist, Inter, system-ui, -apple-system, sans-serif;
+    font-family: var(--font-sans);
     transition: background 0.2s, border-color 0.2s;
   }
 
@@ -82,9 +82,9 @@ function isActive(link: { href: string; exact?: boolean; type?: string }) {
     background: var(--color-canvas-soft-2);
   }
   .nav-link.active {
-    color: var(--color-ink);
-    font-weight: 500;
-    background: var(--color-canvas-soft-2);
+    color: var(--color-primary);
+    font-weight: 600;
+    background: transparent;
   }
 
   /* ── Controls cluster ── */
