@@ -74,6 +74,14 @@ const footerColumns = [
     {description && <meta name="description" content={description} />}
     {canonical && <link rel="canonical" href={canonical} />}
     <slot name="head" />
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Z6B6KLQR10"></script>
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-Z6B6KLQR10');
+    </script>
   </head>
   <body class="font-sans text-ink bg-canvas-soft min-h-screen flex flex-col">
     <!-- Skip link -->
