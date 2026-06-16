@@ -95,27 +95,27 @@ const canonical = `${siteUrl}/`;
   <main id="main-content">
 
     <!-- Hero -->
-    <section class="bg-canvas-soft border-b border-hairline py-24 px-6">
-      <div class="max-w-[960px] mx-auto text-center">
-        <h1 class="text-balance text-[48px] font-semibold leading-[48px] tracking-[-2.4px] text-ink mb-4">
+    <section class="bg-canvas-soft border-b border-hairline py-10 sm:py-14 px-4 sm:px-6">
+      <div class="max-w-[760px] mx-auto text-center">
+        <h1 class="text-balance text-[28px] sm:text-[36px] font-semibold leading-[1.15] sm:leading-[44px] tracking-[-1.2px] sm:tracking-[-1.8px] text-ink mb-3">
           Find Your Dream Government Job
         </h1>
-        <p class="text-lg leading-7 text-body mb-8">
+        <p class="text-base leading-6 text-body mb-6">
           Browse {totalCount} sarkari and private jobs across India.
         </p>
 
-        <form action="/jobs" method="get" role="search" class="flex gap-2 max-w-[560px] mx-auto mb-6 flex-wrap">
+        <form action="/jobs" method="get" role="search" class="flex gap-2 max-w-[480px] mx-auto mb-5 flex-wrap">
           <input
             type="search"
             name="q"
             placeholder="Search jobs by title, department…"
             aria-label="Search jobs"
             autocomplete="off"
-            class="flex-[1_1_280px] h-12 px-3 font-sans text-base text-ink bg-canvas border border-hairline rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:border-transparent transition-shadow"
+            class="flex-[1_1_200px] h-11 px-3 font-sans text-base text-ink bg-canvas border border-hairline rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:border-transparent transition-shadow"
           />
           <button
             type="submit"
-            class="h-12 px-6 font-sans text-base font-medium text-on-primary bg-ink border-none rounded-pill cursor-pointer hover:bg-[#2e2e2e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 transition-colors"
+            class="h-11 px-5 font-sans text-base font-medium text-on-primary bg-ink border-none rounded-pill cursor-pointer hover:bg-[#2e2e2e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 transition-colors"
           >
             Search
           </button>
@@ -125,7 +125,7 @@ const canonical = `${siteUrl}/`;
           {quickLinks.map((q) => (
             <a
               href={q.href}
-              class="inline-block px-4 py-1.5 text-sm text-body bg-canvas border border-hairline rounded-pill-sm hover:bg-canvas-soft-2 hover:border-hairline-strong transition-colors"
+              class="inline-block px-3 sm:px-4 py-1.5 text-sm text-body bg-canvas border border-hairline rounded-pill-sm hover:bg-canvas-soft-2 hover:border-hairline-strong transition-colors"
             >
               {q.label}
             </a>
@@ -135,8 +135,8 @@ const canonical = `${siteUrl}/`;
     </section>
 
     <!-- Job-type cards -->
-    <section class="py-16 px-6 max-w-[1200px] mx-auto">
-      <h2 class="text-balance text-[32px] font-semibold leading-10 tracking-[-1.28px] text-ink mb-6">
+    <section class="py-8 sm:py-12 px-4 sm:px-6 max-w-[1200px] mx-auto">
+      <h2 class="text-balance text-[22px] sm:text-[26px] font-semibold leading-7 sm:leading-9 tracking-[-0.88px] sm:tracking-[-1.04px] text-ink mb-5 sm:mb-6">
         Browse by Job Type
       </h2>
       <div class="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4">
@@ -157,9 +157,9 @@ const canonical = `${siteUrl}/`;
     </section>
 
     <!-- Latest jobs -->
-    <section class="py-16 px-6 max-w-[1200px] mx-auto border-t border-hairline">
-      <div class="flex items-baseline justify-between flex-wrap gap-4 mb-6">
-        <h2 class="text-balance text-[32px] font-semibold leading-10 tracking-[-1.28px] text-ink m-0">
+    <section class="py-8 sm:py-12 px-4 sm:px-6 max-w-[1200px] mx-auto border-t border-hairline">
+      <div class="flex items-baseline justify-between flex-wrap gap-4 mb-5 sm:mb-6">
+        <h2 class="text-balance text-[22px] sm:text-[26px] font-semibold leading-7 sm:leading-9 tracking-[-0.88px] sm:tracking-[-1.04px] text-ink m-0">
           Latest Jobs
         </h2>
         <a href="/jobs" class="text-base text-link hover:underline">View all jobs →</a>
@@ -175,9 +175,9 @@ const canonical = `${siteUrl}/`;
 
     <!-- Featured states -->
     {featuredStates.length > 0 && (
-      <section class="py-16 px-6 max-w-[1200px] mx-auto border-t border-hairline">
-        <div class="flex items-baseline justify-between flex-wrap gap-4 mb-6">
-          <h2 class="text-balance text-[32px] font-semibold leading-10 tracking-[-1.28px] text-ink m-0">
+      <section class="py-8 sm:py-12 px-4 sm:px-6 max-w-[1200px] mx-auto border-t border-hairline">
+        <div class="flex items-baseline justify-between flex-wrap gap-4 mb-5 sm:mb-6">
+          <h2 class="text-balance text-[22px] sm:text-[26px] font-semibold leading-7 sm:leading-9 tracking-[-0.88px] sm:tracking-[-1.04px] text-ink m-0">
             Browse by State
           </h2>
           <a href="/states" class="text-base text-link hover:underline">View all states →</a>
@@ -197,8 +197,8 @@ const canonical = `${siteUrl}/`;
     )}
 
     <!-- Browse by category -->
-    <section class="py-16 px-6 max-w-[1200px] mx-auto border-t border-hairline">
-      <h2 class="text-balance text-[32px] font-semibold leading-10 tracking-[-1.28px] text-ink mb-6">
+    <section class="py-8 sm:py-12 px-4 sm:px-6 max-w-[1200px] mx-auto border-t border-hairline">
+      <h2 class="text-balance text-[22px] sm:text-[26px] font-semibold leading-7 sm:leading-9 tracking-[-0.88px] sm:tracking-[-1.04px] text-ink mb-5 sm:mb-6">
         Browse by Category
       </h2>
       <div class="flex flex-wrap gap-2">

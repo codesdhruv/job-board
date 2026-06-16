@@ -2,19 +2,14 @@
 const pathname = Astro.url.pathname;
 const search = Astro.url.searchParams;
 
-const primaryLinks = [
-  { label: 'Home',      href: '/',                exact: true },
-  { label: 'Jobs',      href: '/jobs',             exact: true },
-  { label: 'Govt Jobs', href: '/jobs?type=government', type: 'government' },
-  { label: 'By State',  href: '/states' },
-  { label: 'About',     href: '/about' },
-];
-
-const secondaryLinks = [
+const links = [
+  { label: 'Home',         href: '/',                    exact: true },
+  { label: 'Jobs',         href: '/jobs',                exact: true },
+  { label: 'Govt Jobs',    href: '/jobs?type=government', type: 'government' },
+  { label: 'By State',     href: '/states' },
   { label: 'Private Jobs', href: '/jobs?type=private',   type: 'private' },
   { label: 'PSU Jobs',     href: '/jobs?type=psu',       type: 'psu' },
   { label: 'Freelance',    href: '/jobs?type=freelance',  type: 'freelance' },
-  { label: 'Contact',      href: '/contact' },
 ];
 
 function isActive(link: { href: string; exact?: boolean; type?: string }) {
@@ -64,6 +59,7 @@ function isActive(link: { href: string; exact?: boolean; type?: string }) {
   .nav-links {
     display: none;
     align-items: center;
+    justify-content: center;
     gap: 2px;
     flex: 1;
   }
@@ -71,15 +67,7 @@ function isActive(link: { href: string; exact?: boolean; type?: string }) {
     .nav-links { display: flex; }
   }
 
-  .nav-divider {
-    width: 1px;
-    height: 16px;
-    background: var(--color-hairline);
-    margin: 0 6px;
-    flex-shrink: 0;
-  }
-
-  .nav-link {
+.nav-link {
     font-size: 14px;
     font-weight: 400;
     color: var(--color-body);
@@ -195,18 +183,7 @@ function isActive(link: { href: string; exact?: boolean; type?: string }) {
     <a href="/" class="nav-logo">SarkariNaukriBoard</a>
 
     <div class="nav-links" role="list">
-      {primaryLinks.map(link => (
-        <a
-          href={link.href}
-          class={`nav-link${isActive(link) ? ' active' : ''}`}
-          aria-current={isActive(link) ? 'page' : undefined}
-          role="listitem"
-        >
-          {link.label}
-        </a>
-      ))}
-      <span class="nav-divider" aria-hidden="true"></span>
-      {secondaryLinks.map(link => (
+      {links.map(link => (
         <a
           href={link.href}
           class={`nav-link${isActive(link) ? ' active' : ''}`}
@@ -253,18 +230,7 @@ function isActive(link: { href: string; exact?: boolean; type?: string }) {
   </div>
 
   <div id="mobile-menu" hidden aria-label="Mobile navigation">
-    <div class="mobile-section-label">Main</div>
-    {primaryLinks.map(link => (
-      <a
-        href={link.href}
-        class={`mobile-link${isActive(link) ? ' active' : ''}`}
-        aria-current={isActive(link) ? 'page' : undefined}
-      >
-        {link.label}
-      </a>
-    ))}
-    <div class="mobile-section-label">More</div>
-    {secondaryLinks.map(link => (
+    {links.map(link => (
       <a
         href={link.href}
         class={`mobile-link${isActive(link) ? ' active' : ''}`}
