@@ -14,22 +14,16 @@
 		{
 			"binding": "DB",
 			"database_name": "job-board-db",
-			"database_id": "PLACEHOLDER_D1_ID"
+			"database_id": "11321cad-b5c5-45bd-a739-ea5736e6e69c"
 		}
 	],
 	"kv_namespaces": [
 		{
 			"binding": "KV",
-			"id": "PLACEHOLDER_KV_ID"
+			"id": "c5ee2163fe8341b6a4dfbe80f14ab2f5"
 		}
 	],
-	"r2_buckets": [
-		{
-			"binding": "R2",
-			"bucket_name": "job-board-assets"
-		}
-	],
-	"vars": {
-		"SITE_URL": "https://example.com"
+"vars": {
+		"SITE_URL": "https://job-board.mailingid839.workers.dev"
 	}
 }
