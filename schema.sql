@@ -96,6 +96,39 @@ CREATE TABLE IF NOT EXISTS departments (
   logo_r2_key  TEXT
 );
 
+INSERT OR IGNORE INTO departments (name) VALUES
+  ('UPSC — Union Public Service Commission'),
+  ('SSC — Staff Selection Commission'),
+  ('IBPS — Institute of Banking Personnel Selection'),
+  ('SBI — State Bank of India'),
+  ('RBI — Reserve Bank of India'),
+  ('Indian Railways / Railway Recruitment Board'),
+  ('Ministry of Defence'),
+  ('Ministry of Home Affairs'),
+  ('Ministry of Finance'),
+  ('Ministry of Education'),
+  ('Ministry of Health and Family Welfare'),
+  ('Ministry of Agriculture and Farmers Welfare'),
+  ('DRDO — Defence Research and Development Organisation'),
+  ('ISRO — Indian Space Research Organisation'),
+  ('NHM — National Health Mission'),
+  ('NVS — Navodaya Vidyalaya Samiti'),
+  ('KVS — Kendriya Vidyalaya Sangathan'),
+  ('Delhi Police'),
+  ('CRPF — Central Reserve Police Force'),
+  ('BSF — Border Security Force'),
+  ('CISF — Central Industrial Security Force'),
+  ('Indian Army'),
+  ('Indian Navy'),
+  ('Indian Air Force'),
+  ('Coal India Limited'),
+  ('ONGC — Oil and Natural Gas Corporation'),
+  ('BHEL — Bharat Heavy Electricals Limited'),
+  ('HAL — Hindustan Aeronautics Limited'),
+  ('NTPC — National Thermal Power Corporation'),
+  ('SAIL — Steel Authority of India Limited'),
+  ('Other / Not Listed');
+
 -- 5. admins ----------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS admins (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,

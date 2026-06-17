@@ -11,6 +11,8 @@
     "preview": "astro preview",
     "astro": "astro",
     "generate-types": "wrangler types",
+    "migrate:local": "wrangler d1 execute job-board-db --local --file=./schema.sql",
+    "migrate:remote": "wrangler d1 execute job-board-db --remote --file=./schema.sql",
     "deploy": "astro build && wrangler deploy"
   },
   "dependencies": {
