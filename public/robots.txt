@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin/
 Disallow: /admin/*
 
-Sitemap: https://example.com/sitemap.xml
+Sitemap: https://job-board.mailingid839.workers.dev/sitemap.xml
